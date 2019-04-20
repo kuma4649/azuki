@@ -110,9 +110,9 @@ namespace Sgry.Azuki
 		{
 			if( _GroupingUndoChain == null )
 			{
-				_GroupingUndoChain = new EditAction( null,
-													 0, null, null,
-													 0, 0, null );
+                _GroupingUndoChain = new EditAction(null,
+                                                     0, null, null,
+                                                     0, 0, null, null);
 			}
 			_GroupUndoDepth++;
 		}

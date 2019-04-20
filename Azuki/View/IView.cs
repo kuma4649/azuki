@@ -120,37 +120,47 @@ namespace Sgry.Azuki
 			get; set;
 		}
 
-		/// <summary>
-		/// Gets or sets whether to show 'dirt bar' or not.
-		/// </summary>
-		/// <remarks>
-		/// <para>
-		/// This property gets or sets whether to show 'dirt bar' or not.
-		/// The dirt bar is graphically a thin bar at right end of the line number area
-		/// that indicates the dirty state of each text line.
-		/// The state of line is one of the following states.
-		/// </para>
-		/// <list type="bullet">
-		///		<item>LineDirtyState.Clean: the line is not modified yet.</item>
-		///		<item>LineDirtyState.Dirty: the line is modified and not saved.</item>
-		///		<item>LineDirtyState.Cleaned: the line is modified but saved.</item>
-		/// </list>
-		/// <para>
-		/// Color of each line dirty state can be customized by setting
-		/// ColorScheme.DirtyLineBar, ColorScheme.CleanedLineBar.
-		/// </para>
-		/// </remarks>
-		/// <seealso cref="Sgry.Azuki.LineDirtyState">LineDirtyState enum</seealso>
-		/// <seealso cref="Sgry.Azuki.Document.GetLineDirtyState">Document.GetLineDirtyState method</seealso>
-		bool ShowsDirtBar
-		{
-			get; set;
-		}
+        /// <summary>
+        /// Gets or sets whether to show 'dirt bar' or not.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This property gets or sets whether to show 'dirt bar' or not.
+        /// The dirt bar is graphically a thin bar at right end of the line number area
+        /// that indicates the dirty state of each text line.
+        /// The state of line is one of the following states.
+        /// </para>
+        /// <list type="bullet">
+        ///		<item>LineDirtyState.Clean: the line is not modified yet.</item>
+        ///		<item>LineDirtyState.Dirty: the line is modified and not saved.</item>
+        ///		<item>LineDirtyState.Cleaned: the line is modified but saved.</item>
+        /// </list>
+        /// <para>
+        /// Color of each line dirty state can be customized by setting
+        /// ColorScheme.DirtyLineBar, ColorScheme.CleanedLineBar.
+        /// </para>
+        /// </remarks>
+        /// <seealso cref="Sgry.Azuki.LineDirtyState">LineDirtyState enum</seealso>
+        /// <seealso cref="Sgry.Azuki.Document.GetLineDirtyState">Document.GetLineDirtyState method</seealso>
+        bool ShowsDirtBar
+        {
+            get; set;
+        }
 
-		/// <summary>
-		/// Gets or sets whether to draw half-width space with special graphic or not.
-		/// </summary>
-		bool DrawsSpace
+        bool ShowsIconBar
+        {
+            get; set;
+        }
+
+        System.Windows.Forms.ImageList IconBarImageList
+        {
+            get;set;
+        }
+
+        /// <summary>
+        /// Gets or sets whether to draw half-width space with special graphic or not.
+        /// </summary>
+        bool DrawsSpace
 		{
 			get; set;
 		}
@@ -657,10 +667,23 @@ namespace Sgry.Azuki
 			get;
 		}
 
-		/// <summary>
-		/// Gets X coordinate in client area of left margin.
-		/// </summary>
-		int XofLeftMargin
+        /// <summary>
+        /// Gets X coordinate in client area of icon bar area.
+        /// </summary>
+        int XofIconBar
+        {
+            get;
+        }
+
+        int IconBarWidth
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets X coordinate in client area of left margin.
+        /// </summary>
+        int XofLeftMargin
 		{
 			get;
 		}

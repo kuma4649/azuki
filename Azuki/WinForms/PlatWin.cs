@@ -579,10 +579,21 @@ namespace Sgry.Azuki.WinForms
 			WinApi.SelectObject( DC, oldPen );
 			WinApi.SelectObject( DC, oldBrush );
 		}
-		#endregion
 
-		#region Utilities
-		IntPtr NullPen
+        public void DrawImage(Image img, int x, int y, int width, int height)
+        {
+            x -= _Offset.X;
+            y -= _Offset.Y;
+            using (Graphics g = Graphics.FromHdc(DC))
+            {
+                g.DrawImage(img, x, y, width, height);
+            }
+        }
+
+        #endregion
+
+        #region Utilities
+        IntPtr NullPen
 		{
 			get
 			{

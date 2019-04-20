@@ -179,10 +179,15 @@ namespace Sgry.Azuki
 			get; set;
 		}
 
-		/// <summary>
-		/// Gets or sets whether the current line would be drawn with underline or not.
-		/// </summary>
-		bool HighlightsCurrentLine
+        bool ShowsIconBar
+        {
+            get; set;
+        }
+
+        /// <summary>
+        /// Gets or sets whether the current line would be drawn with underline or not.
+        /// </summary>
+        bool HighlightsCurrentLine
 		{
 			get; set;
 		}
@@ -875,6 +880,11 @@ namespace Sgry.Azuki
 		/// (Internal use only.) Invokes HScroll event.
 		/// </summary>
 		void InvokeHScroll();
+
+
+        event IconBarClickedEventHandler IconBarClicked;
+        void InvokeIconBarClicked(int clickedIndex);
+
 		#endregion
 
 		#region Scroll
@@ -967,13 +977,15 @@ namespace Sgry.Azuki
 	/// <seealso cref="Sgry.Azuki.IUserInterface.LineDrawn">IUserInterface.LineDrawn event</seealso>
 	public delegate void LineDrawEventHandler( object sender, LineDrawEventArgs e );
 
-	/// <summary>
-	/// Information about LineDrawing event or LineDrawn event.
-	/// </summary>
-	/// <seealso cref="Sgry.Azuki.LineDrawEventHandler">LineDrawEventHandler delegate</seealso>
-	/// <seealso cref="Sgry.Azuki.IUserInterface.LineDrawing">IUserInterface.LineDrawing event</seealso>
-	/// <seealso cref="Sgry.Azuki.IUserInterface.LineDrawn">IUserInterface.LineDrawn event</seealso>
-	public class LineDrawEventArgs : EventArgs
+    public delegate void IconBarClickedEventHandler(object sender, IconBarClickedEventArgs e);
+
+    /// <summary>
+    /// Information about LineDrawing event or LineDrawn event.
+    /// </summary>
+    /// <seealso cref="Sgry.Azuki.LineDrawEventHandler">LineDrawEventHandler delegate</seealso>
+    /// <seealso cref="Sgry.Azuki.IUserInterface.LineDrawing">IUserInterface.LineDrawing event</seealso>
+    /// <seealso cref="Sgry.Azuki.IUserInterface.LineDrawn">IUserInterface.LineDrawn event</seealso>
+    public class LineDrawEventArgs : EventArgs
 	{
 		#region Fields
 		IGraphics _Graphics;
@@ -1031,4 +1043,15 @@ namespace Sgry.Azuki
 		}
 		#endregion
 	}
+
+    public class IconBarClickedEventArgs : EventArgs
+    {
+        public IconBarClickedEventArgs(int clickedIndex)
+        {
+            this.clickedIndex = clickedIndex;
+        }
+
+        public int clickedIndex { get; }
+    }
+
 }

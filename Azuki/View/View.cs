@@ -44,8 +44,9 @@ namespace Sgry.Azuki
 		int _TabWidth = DefaultTabWidth;
 		int _TabWidthInPx;
 		int _XCharWidth;
-		int _DirtBarWidth;
-		int _HRulerHeight;	// height of the largest lines of the horizontal ruler
+        int _DirtBarWidth;
+        int _IconBarWidth;
+        int _HRulerHeight;	// height of the largest lines of the horizontal ruler
 		int _HRulerY_5;		// height of the middle lines of the horizontal ruler
 		int _HRulerY_1;		// height of the smallest lines of the horizontal ruler
 		HRulerIndicatorType _HRulerIndicatorType = HRulerIndicatorType.Segment;
@@ -55,23 +56,24 @@ namespace Sgry.Azuki
 		FontInfo _HRulerFont;
 		int _TopMargin = 1;
 		int _LeftMargin = 1;
-		DrawingOption _DrawingOption
-			= DrawingOption.DrawsTab
-			| DrawingOption.DrawsFullWidthSpace
-			| DrawingOption.DrawsEol
-			| DrawingOption.HighlightCurrentLine
-			| DrawingOption.ShowsLineNumber
-			| DrawingOption.ShowsDirtBar
-			| DrawingOption.HighlightsMatchedBracket;
+        DrawingOption _DrawingOption
+            = DrawingOption.DrawsTab
+            | DrawingOption.DrawsFullWidthSpace
+            | DrawingOption.DrawsEol
+            | DrawingOption.HighlightCurrentLine
+            | DrawingOption.ShowsLineNumber
+            | DrawingOption.ShowsDirtBar
+            | DrawingOption.HighlightsMatchedBracket;
 		bool _ScrollsBeyondLastLine = true;
-		#endregion
+        System.Windows.Forms.ImageList _IconBarImageList = null;
+        #endregion
 
-		#region Init / Dispose
-		/// <summary>
-		/// Creates a new instance.
-		/// </summary>
-		/// <param name="ui">Implementation of the platform dependent UI module.</param>
-		internal View( IUserInterface ui )
+        #region Init / Dispose
+        /// <summary>
+        /// Creates a new instance.
+        /// </summary>
+        /// <param name="ui">Implementation of the platform dependent UI module.</param>
+        internal View( IUserInterface ui )
 		{
 			Debug.Assert( ui != null );
 			_UI = ui;
@@ -93,6 +95,7 @@ namespace Sgry.Azuki
 			{
 				this._ColorScheme = new ColorScheme( other._ColorScheme );
 				this._DrawingOption = other._DrawingOption;
+                this._IconBarImageList = other._IconBarImageList;
 				//DO_NOT//this._DirtBarWidth = other._DirtBarWidth;
 				//DO_NOT//this._HRulerFont = other._HRulerFont;
 				//DO_NOT//this._LCharWidth = other._LCharWidth;
@@ -256,6 +259,7 @@ namespace Sgry.Azuki
 			_LineNumAreaWidth
 				= g.MeasureText( _LastUsedLineNumberSample.ToString() ).Width + _SpaceWidth;
 			_DirtBarWidth = Math.Max( 3, _SpaceWidth >> 1 );
+            _IconBarWidth = 16;
 
 			// update metrics related with horizontal ruler
 			_HRulerHeight = (int)( _LineHeight / GoldenRatio ) + 2;
@@ -385,10 +389,16 @@ namespace Sgry.Azuki
 			set{ _DrawingOption = value; }
 		}
 
-		/// <summary>
-		/// Gets or sets whether the current line would be drawn with underline or not.
-		/// </summary>
-		public bool HighlightsCurrentLine
+        public System.Windows.Forms.ImageList IconBarImageList
+        {
+            get { return _IconBarImageList; }
+            set { _IconBarImageList = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the current line would be drawn with underline or not.
+        /// </summary>
+        public bool HighlightsCurrentLine
 		{
 			get{ return (DrawingOption & DrawingOption.HighlightCurrentLine) != 0; }
 			set
@@ -495,10 +505,25 @@ namespace Sgry.Azuki
 			}
 		}
 
-		/// <summary>
-		/// Gets or sets whether to draw half-width space with special graphic or not.
-		/// </summary>
-		public bool DrawsSpace
+        public bool ShowsIconBar
+        {
+            get { return (DrawingOption & DrawingOption.ShowsIconBar) != 0; }
+            set
+            {
+                if (value)
+                    DrawingOption |= DrawingOption.ShowsIconBar;
+                else
+                    DrawingOption &= ~DrawingOption.ShowsIconBar;
+
+                _UI.UpdateCaretGraphic();
+                Invalidate();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets whether to draw half-width space with special graphic or not.
+        /// </summary>
+        public bool DrawsSpace
 		{
 			get{ return (DrawingOption & DrawingOption.DrawsSpace) != 0; }
 			set
@@ -724,10 +749,24 @@ namespace Sgry.Azuki
 			}
 		}
 
-		/// <summary>
-		/// Gets height of the horizontal ruler.
-		/// </summary>
-		public int HRulerHeight
+        /// <summary>
+        /// Gets width of the dirt bar in pixel.
+        /// </summary>
+        public int IconBarWidth
+        {
+            get
+            {
+                if (ShowsIconBar)
+                    return _IconBarWidth;
+                else
+                    return 0;
+            }
+        }
+
+        /// <summary>
+        /// Gets height of the horizontal ruler.
+        /// </summary>
+        public int HRulerHeight
 		{
 			get
 			{
@@ -1488,7 +1527,7 @@ namespace Sgry.Azuki
 		/// </summary>
 		public int XofLineNumberArea
 		{
-			get{ return 0; }
+			get{ return IconBarWidth; }
 		}
 
 		/// <summary>
@@ -1499,10 +1538,18 @@ namespace Sgry.Azuki
 			get{ return XofLineNumberArea + LineNumAreaWidth; }
 		}
 
-		/// <summary>
-		/// Gets X coordinate in client area of left margin.
-		/// </summary>
-		public int XofLeftMargin
+        /// <summary>
+        /// Gets X coordinate in client area of icon bar area.
+        /// </summary>
+        public int XofIconBar
+        {
+            get { return 0; }
+        }
+
+        /// <summary>
+        /// Gets X coordinate in client area of left margin.
+        /// </summary>
+        public int XofLeftMargin
 		{
 			get
 			{

@@ -174,13 +174,16 @@ namespace Sgry.Azuki
 		/// Note that right and bottom edge will also be painted.
 		/// </summary>
 		void FillRectangle( int x, int y, int width, int height );
-		#endregion
-	}
 
-	/// <summary>
-	/// Information about font.
-	/// </summary>
-	public class FontInfo
+        void DrawImage(Image bmp, int x, int y, int width, int height);
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Information about font.
+    /// </summary>
+    public class FontInfo
 	{
 		string _Name;
 		int _Size;

@@ -774,10 +774,28 @@ namespace Sgry.Azuki.WinForms
 			set{ View.ShowsDirtBar = value; }
 		}
 
-		/// <summary>
-		/// Gets or sets whether the current line would be drawn with underline or not.
-		/// </summary>
-		[Category("Appearance")]
+        [Category("Appearance")]
+        [DefaultValue(false)]
+        [Description("行頭にアイコンを表示するスペースを設けます。")]
+        public bool ShowsIconBar
+        {
+            get { return View.ShowsIconBar; }
+            set { View.ShowsIconBar = value; }
+        }
+
+        [Category("Appearance")]
+        [DefaultValue(null)]
+        [Description("IconBarに使用する画像を指定します。")]
+        public ImageList IconBarImageList
+        {
+            get { return View.IconBarImageList; }
+            set { View.IconBarImageList = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the current line would be drawn with underline or not.
+        /// </summary>
+        [Category("Appearance")]
 		[DefaultValue(true)]
 		public bool HighlightsCurrentLine
 		{
@@ -1865,13 +1883,25 @@ namespace Sgry.Azuki.WinForms
 			if( HScroll != null )
 				HScroll( this, EventArgs.Empty );
 		}
-		#endregion
 
-		#region IUserInterface - Scroll
-		/// <summary>
-		/// Scrolls a portion of the window.
-		/// </summary>
-		public void Scroll( Rectangle rect, int vOffset, int hOffset )
+        public event IconBarClickedEventHandler IconBarClicked;
+        public void InvokeIconBarClicked(int clickedIndex)
+        {
+            if (IconBarClicked != null)
+            {
+                IconBarClickedEventArgs e = new IconBarClickedEventArgs(clickedIndex);
+                IconBarClicked(this, e);
+            }
+        }
+
+
+        #endregion
+
+        #region IUserInterface - Scroll
+        /// <summary>
+        /// Scrolls a portion of the window.
+        /// </summary>
+        public void Scroll( Rectangle rect, int vOffset, int hOffset )
 		{
 			WinApi.ScrollWindow( Handle, vOffset, hOffset, rect );
 			WinApi.SetScrollPos( Handle, false, _Impl.View.FirstVisibleLine );

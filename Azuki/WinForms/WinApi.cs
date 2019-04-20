@@ -353,12 +353,17 @@ namespace Sgry.Azuki.WinForms
 		[DllImport(gdi32_dll)]
 		public static unsafe extern Int32 DeleteDC( IntPtr hdc );
 
-		[DllImport(gdi32_dll)]
-		public static extern Int32 BitBlt(
-			IntPtr destination, Int32 destX, Int32 destY, Int32 width, Int32 height,
-			IntPtr source, Int32 srcX, Int32 srcY, UInt32 rasterOpCode );
+        [DllImport(gdi32_dll)]
+        public static extern Int32 BitBlt(
+            IntPtr destination, Int32 destX, Int32 destY, Int32 width, Int32 height,
+            IntPtr source, Int32 srcX, Int32 srcY, UInt32 rasterOpCode);
 
-		[DllImport(gdi32_dll)]
+        [DllImport(gdi32_dll)]
+        public static extern Int32 GdiAlphaBlend(
+            IntPtr destination, Int32 destX, Int32 destY, Int32 width, Int32 height,
+            IntPtr source, Int32 srcX, Int32 srcY, Int32 srcWidth, Int32 srcHeight, UInt32 transparent);
+
+        [DllImport(gdi32_dll)]
 		public static extern Int32 SelectClipRgn( IntPtr hdc, IntPtr regionHdl );
 
 		[DllImport(gdi32_dll)]

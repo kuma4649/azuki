@@ -32,8 +32,9 @@ namespace Sgry.Azuki.Test
 			TextBuffer text;
 			SplitArray<int> lhi;
 			SplitArray<LineDirtyState> lds;
+            SplitArray<int> lii;
 
-			MakeTestData( out text, out lhi, out lds );
+            MakeTestData(out text, out lhi, out lds, out lii);
 
 			Assert.AreEqual(  0, TextUtil.GetCharIndexFromLineColumnIndex(text, lhi, 0,  0) );
 			Assert.AreEqual( 34, TextUtil.GetCharIndexFromLineColumnIndex(text, lhi, 2,  1) );
@@ -132,8 +133,9 @@ namespace Sgry.Azuki.Test
 			TextBuffer text;
 			SplitArray<int> lhi;
 			SplitArray<LineDirtyState> lds;
+            SplitArray<int> lii;
 
-			MakeTestData( out text, out lhi, out lds );
+            MakeTestData(out text, out lhi, out lds, out lii);
 
 			range = TextUtil.GetLineRange( text, lhi, 0, false );
 			Assert.AreEqual( 0, range.Begin );
@@ -267,324 +269,422 @@ namespace Sgry.Azuki.Test
 			} );
 		}
 
-		[TestMethod]
-		public void LHI_Insert()
-		{
-			// TEST DATA:
-			// --------------------
-			// "keep it as simple as possible\r\n (head: 0, len:31)
-			// \n                                 (head:32, len: 1)
-			// but\n                              (head:33, len: 4)
-			// \r                                 (head:37, len: 1)
-			// not simpler."\r                    (head:38, len:14)
-			// \r                                 (head:52, len: 1)
-			//  - Albert Einstein                 (head:53, len:18)
-			// --------------------
-			const string TestData1 = "\"keep ot simpler.\"\r\r - Albert Einstein";
-			const string TestData2 = "it as simple as possible\r\n\nbt\n\rn";
-			TextBuffer text = new TextBuffer( 1, 1 );
-			SplitArray<int> lhi = new SplitArray<int>( 1, 1 );
-			SplitArray<LineDirtyState> lds = new SplitArray<LineDirtyState>( 1, 1 );
-			lhi.Add( 0 ); lds.Add( LineDirtyState.Clean );
+        [TestMethod]
+        public void LHI_Insert()
+        {
+            // TEST DATA:
+            // --------------------
+            // "keep it as simple as possible\r\n (head: 0, len:31)
+            // \n                                 (head:32, len: 1)
+            // but\n                              (head:33, len: 4)
+            // \r                                 (head:37, len: 1)
+            // not simpler."\r                    (head:38, len:14)
+            // \r                                 (head:52, len: 1)
+            //  - Albert Einstein                 (head:53, len:18)
+            // --------------------
+            const string TestData1 = "\"keep ot simpler.\"\r\r - Albert Einstein";
+            const string TestData2 = "it as simple as possible\r\n\nbt\n\rn";
+            TextBuffer text = new TextBuffer(1, 1);
+            SplitArray<int> lhi = new SplitArray<int>(1, 1);
+            SplitArray<LineDirtyState> lds = new SplitArray<LineDirtyState>(1, 1);
+            SplitArray<int> lii = new SplitArray<int>(1, 1);
+            lhi.Add(0);
+            lds.Add(LineDirtyState.Clean);
+            lii.Add(-1);
 
-			TextUtil.LHI_Insert( lhi, lds, text, TestData1, 0 );
-			text.Add( TestData1.ToCharArray() );
-			Assert.AreEqual( "0 19 20", lhi.ToString() );
-			Assert.AreEqual( "DDD", MakeLdsText(lds) );
+            TextUtil.LHI_Insert(lhi, lds, lii, text, TestData1, 0);
+            text.Add(TestData1.ToCharArray());
+            Assert.AreEqual("0 19 20", lhi.ToString());
+            Assert.AreEqual("DDD", MakeLdsText(lds));
+            Assert.AreEqual("NNN", MakeLiiText(lii));
 
-			for( int i=0; i<lds.Count; i++ )
-				lds[i] = LineDirtyState.Clean;
-			TextUtil.LHI_Insert( lhi, lds, text, TestData2, 6 );
-			text.Insert( 6, TestData2.ToCharArray() );
-			Assert.AreEqual( "0 32 33 36 37 51 52", lhi.ToString() );
-			Assert.AreEqual( "DDDDDCC", MakeLdsText(lds) );
+            for (int i = 0; i < lds.Count; i++)
+                lds[i] = LineDirtyState.Clean;
+            for (int i = 0; i < lii.Count; i++)
+                lii[i] = -1;
+            TextUtil.LHI_Insert(lhi, lds, lii, text, TestData2, 6);
+            text.Insert(6, TestData2.ToCharArray());
+            Assert.AreEqual("0 32 33 36 37 51 52", lhi.ToString());
+            Assert.AreEqual("DDDDDCC", MakeLdsText(lds));
+            Assert.AreEqual("NNNNNNN", MakeLiiText(lii));
 
-			for( int i=0; i<lds.Count; i++ )
-				lds[i] = LineDirtyState.Clean;
-			TextUtil.LHI_Insert( lhi, lds, text, "u", 34 );
-			text.Insert( 34, "u".ToCharArray() );
-			Assert.AreEqual( "0 32 33 37 38 52 53", lhi.ToString() );
-			Assert.AreEqual( "CCDCCCC", MakeLdsText(lds) );
+            for (int i = 0; i < lds.Count; i++)
+                lds[i] = LineDirtyState.Clean;
+            for (int i = 0; i < lii.Count; i++)
+                lii[i] = -1;
+            TextUtil.LHI_Insert(lhi, lds, lii, text, "u", 34);
+            text.Insert(34, "u".ToCharArray());
+            Assert.AreEqual("0 32 33 37 38 52 53", lhi.ToString());
+            Assert.AreEqual("CCDCCCC", MakeLdsText(lds));
+            Assert.AreEqual("NNNNNNN", MakeLiiText(lii));
 
-			//--- special care about CR+LF ---
-			// (1) insertion divides a CR+LF
-			// (2) inserting text begins with LF creates a new CR+LF at left side of the insertion point
-			// (3) inserting text ends with CR creates a new CR+LF at right side of the insertion point
-			//--------------------------------
-			// (1)+(2)
-			{
-				text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-				TextUtil.LHI_Insert( lhi, lds, text, "foo\r\nbar", 0 );
-				text.Add( "foo\r\nbar".ToCharArray() );
-				for( int i=0; i<lds.Count; i++ )
-					lds[i] = LineDirtyState.Clean;
+            //--- special care about CR+LF ---
+            // (1) insertion divides a CR+LF
+            // (2) inserting text begins with LF creates a new CR+LF at left side of the insertion point
+            // (3) inserting text ends with CR creates a new CR+LF at right side of the insertion point
+            //--------------------------------
+            // (1)+(2)
+            {
+                text.Clear();
+                lhi.Clear(); lhi.Add(0);
+                lds.Clear(); lds.Add(LineDirtyState.Clean);
+                lii.Clear(); lii.Add(0);
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "foo\r\nbar", 0);
+                text.Add("foo\r\nbar".ToCharArray());
+                for (int i = 0; i < lds.Count; i++)
+                    lds[i] = LineDirtyState.Clean;
+                for (int i = 0; i < lii.Count; i++)
+                    lii[i] = -1;
 
-				TextUtil.LHI_Insert( lhi, lds, text, "\nx", 4 );
-				text.Insert( 4, "\nx".ToCharArray() );
-				Assert.AreEqual( "0 5 7", lhi.ToString() );
-				Assert.AreEqual( "DDC", MakeLdsText(lds) );
-			}
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "\nx", 4);
+                text.Insert(4, "\nx".ToCharArray());
+                Assert.AreEqual("0 5 7", lhi.ToString());
+                Assert.AreEqual("DDC", MakeLdsText(lds));
+                Assert.AreEqual("NNN", MakeLiiText(lii));
+            }
 
-			// (1)+(3)
-			{
-				text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-				TextUtil.LHI_Insert( lhi, lds, text, "foo\r\nbar", 0 );
-				text.Add( "foo\r\nbar".ToCharArray() );
-				for( int i=0; i<lds.Count; i++ )
-					lds[i] = LineDirtyState.Clean;
+            // (1)+(3)
+            {
+                text.Clear();
+                lhi.Clear(); lhi.Add(0);
+                lds.Clear(); lds.Add(LineDirtyState.Clean);
+                lii.Clear(); lii.Add(0);
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "foo\r\nbar", 0);
+                text.Add("foo\r\nbar".ToCharArray());
+                for (int i = 0; i < lds.Count; i++)
+                    lds[i] = LineDirtyState.Clean;
+                for (int i = 0; i < lii.Count; i++)
+                    lii[i] = -1;
 
-				TextUtil.LHI_Insert( lhi, lds, text, "x\r", 4 );
-				text.Insert( 4, "x\r".ToCharArray() );
-				Assert.AreEqual( "0 4 7", lhi.ToString() );
-				Assert.AreEqual( "DDC", MakeLdsText(lds) );
-			}
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "x\r", 4);
+                text.Insert(4, "x\r".ToCharArray());
+                Assert.AreEqual("0 4 7", lhi.ToString());
+                Assert.AreEqual("DDC", MakeLdsText(lds));
+                Assert.AreEqual("NNN", MakeLiiText(lii));
+            }
 
-			// (1)+(2)+(3)
-			{
-				text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-				TextUtil.LHI_Insert( lhi, lds, text, "foo\r\nbar", 0 );
-				text.Add( "foo\r\nbar".ToCharArray() );
-				for( int i=0; i<lds.Count; i++ )
-					lds[i] = LineDirtyState.Clean;
+            // (1)+(2)+(3)
+            {
+                text.Clear();
+                lhi.Clear(); lhi.Add(0);
+                lds.Clear(); lds.Add(LineDirtyState.Clean);
+                lii.Clear(); lii.Add(0);
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "foo\r\nbar", 0);
+                text.Add("foo\r\nbar".ToCharArray());
+                for (int i = 0; i < lds.Count; i++)
+                    lds[i] = LineDirtyState.Clean;
+                for (int i = 0; i < lii.Count; i++)
+                    lii[i] = -1;
 
-				TextUtil.LHI_Insert( lhi, lds, text, "\n\r", 4 );
-				text.Insert( 4, "\n\r".ToCharArray() );
-				Assert.AreEqual( "0 5 7", lhi.ToString() );
-				Assert.AreEqual( "DDC", MakeLdsText(lds) );
-			}
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "\n\r", 4);
+                text.Insert(4, "\n\r".ToCharArray());
+                Assert.AreEqual("0 5 7", lhi.ToString());
+                Assert.AreEqual("DDC", MakeLdsText(lds));
+                Assert.AreEqual("NNN", MakeLiiText(lii));
+            }
 
-			// (2)
-			{
-				text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-				TextUtil.LHI_Insert( lhi, lds, text, "foo\rbar", 0 );
-				text.Add( "foo\rbar".ToCharArray() );
-				for( int i=0; i<lds.Count; i++ )
-					lds[i] = LineDirtyState.Clean;
+            // (2)
+            {
+                text.Clear();
+                lhi.Clear(); lhi.Add(0);
+                lds.Clear(); lds.Add(LineDirtyState.Clean);
+                lii.Clear(); lii.Add(0);
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "foo\rbar", 0);
+                text.Add("foo\rbar".ToCharArray());
+                for (int i = 0; i < lds.Count; i++)
+                    lds[i] = LineDirtyState.Clean;
+                for (int i = 0; i < lii.Count; i++)
+                    lii[i] = -1;
 
-				TextUtil.LHI_Insert( lhi, lds, text, "\nx", 4 );
-				text.Insert( 4, "\nx".ToCharArray() );
-				Assert.AreEqual( "0 5", lhi.ToString() );
-				Assert.AreEqual( "DD", MakeLdsText(lds) );
-			}
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "\nx", 4);
+                text.Insert(4, "\nx".ToCharArray());
+                Assert.AreEqual("0 5", lhi.ToString());
+                Assert.AreEqual("DD", MakeLdsText(lds));
+                Assert.AreEqual("NN", MakeLiiText(lii));
+            }
 
-			// (3)
-			{
-				text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-				TextUtil.LHI_Insert( lhi, lds, text, "foo\nbar", 0 );
-				text.Add( "foo\nbar".ToCharArray() );
-				for( int i=0; i<lds.Count; i++ )
-					lds[i] = LineDirtyState.Clean;
+            // (3)
+            {
+                text.Clear();
+                lhi.Clear(); lhi.Add(0);
+                lds.Clear(); lds.Add(LineDirtyState.Clean);
+                lii.Clear(); lii.Add(0);
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "foo\nbar", 0);
+                text.Add("foo\nbar".ToCharArray());
+                for (int i = 0; i < lds.Count; i++)
+                    lds[i] = LineDirtyState.Clean;
+                for (int i = 0; i < lii.Count; i++)
+                    lii[i] = -1;
 
-				TextUtil.LHI_Insert( lhi, lds, text, "x\r", 3 );
-				text.Insert( 3, "x\r".ToCharArray() );
-				Assert.AreEqual( "0 6", lhi.ToString() );
-				Assert.AreEqual( "DC", MakeLdsText(lds) );
-			}
-		}
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "x\r", 3);
+                text.Insert(3, "x\r".ToCharArray());
+                Assert.AreEqual("0 6", lhi.ToString());
+                Assert.AreEqual("DC", MakeLdsText(lds));
+                Assert.AreEqual("NN", MakeLiiText(lii));
+            }
+        }
 
-		[TestMethod]
-		public void LHI_Delete()
-		{
-			// TEST DATA:
-			// --------------------
-			// "keep it as simple as possible\r\n (head: 0, len:31)
-			// \n                                 (head:32, len: 1)
-			// but\n                              (head:33, len: 4)
-			// \r                                 (head:37, len: 1)
-			// not simpler."\r                    (head:38, len:14)
-			// \r                                 (head:52, len: 1)
-			//  - Albert Einstein                 (head:53, len:18)
-			// --------------------
-			const string TestData = "\"keep it as simple as possible\r\n\nbut\n\rnot simpler.\"\r\r - Albert Einstein";
-			TextBuffer text = new TextBuffer( 1, 32 );
-			SplitArray<int> lhi = new SplitArray<int>( 1, 8 );
-			SplitArray<LineDirtyState> lds = new SplitArray<LineDirtyState>( 1, 8 );
-			lds.Add( LineDirtyState.Clean );
+        [TestMethod]
+        public void LHI_Delete()
+        {
+            // TEST DATA:
+            // --------------------
+            // "keep it as simple as possible\r\n (head: 0, len:31)
+            // \n                                 (head:32, len: 1)
+            // but\n                              (head:33, len: 4)
+            // \r                                 (head:37, len: 1)
+            // not simpler."\r                    (head:38, len:14)
+            // \r                                 (head:52, len: 1)
+            //  - Albert Einstein                 (head:53, len:18)
+            // --------------------
+            const string TestData = "\"keep it as simple as possible\r\n\nbut\n\rnot simpler.\"\r\r - Albert Einstein";
+            TextBuffer text = new TextBuffer(1, 32);
+            SplitArray<int> lhi = new SplitArray<int>(1, 8);
+            SplitArray<LineDirtyState> lds = new SplitArray<LineDirtyState>(1, 8);
+            SplitArray<int> lii = new SplitArray<int>(1, 8);
+            lds.Add(LineDirtyState.Clean);
+            lii.Add(-1);
 
-			// prepare
-			lhi.Add( 0 );
-			TextUtil.LHI_Insert( lhi, lds, text, TestData, 0 );
-			text.Add( TestData.ToCharArray() );
-			Assert.AreEqual( "0 32 33 37 38 52 53", lhi.ToString() );
-			Assert.AreEqual( "DDDDDDD", MakeLdsText(lds) );
-			for( int i=0; i<lds.Count; i++ )
-				lds[i] = LineDirtyState.Clean;
-			
-			//--- delete range in line ---
-			// valid range
-			TextUtil.LHI_Delete( lhi, lds, text, 2, 5 );
-			text.RemoveRange( 2, 5 );
-			Assert.AreEqual( "0 29 30 34 35 49 50", lhi.ToString() );
-			Assert.AreEqual( "DCCCCCC", MakeLdsText(lds) );
+            // prepare
+            lhi.Add(0);
+            TextUtil.LHI_Insert(lhi, lds, lii, text, TestData, 0);
+            text.Add(TestData.ToCharArray());
+            Assert.AreEqual("0 32 33 37 38 52 53", lhi.ToString());
+            Assert.AreEqual("DDDDDDD", MakeLdsText(lds));
+            Assert.AreEqual("NNNNNNN", MakeLiiText(lii));
+            for (int i = 0; i < lds.Count; i++)
+                lds[i] = LineDirtyState.Clean;
+            for (int i = 0; i < lii.Count; i++)
+                lii[i] = -1;
 
-			// invalid range (before begin to middle)
-			MyAssert.Throws<AssertException>( delegate {
-				TextUtil.LHI_Delete( lhi, lds, text, -1, 5 );
-			} );
+            //--- delete range in line ---
+            // valid range
+            TextUtil.LHI_Delete(lhi, lds, lii, text, 2, 5);
+            text.RemoveRange(2, 5);
+            Assert.AreEqual("0 29 30 34 35 49 50", lhi.ToString());
+            Assert.AreEqual("DCCCCCC", MakeLdsText(lds));
+            Assert.AreEqual("NNNNNNN", MakeLiiText(lii));
 
-			//--- delete range between different lines ---
-			text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-			TextUtil.LHI_Insert( lhi, lds, text, TestData, 0 );
-			text.Add( TestData.ToCharArray() );
-			// "keep it as simple as possible\r\n (head: 0, len:31)
-			// \n                                 (head:32, len: 1)
-			// but\n                              (head:33, len: 4)
-			// \r                                 (head:37, len: 1)
-			// not simpler."\r                    (head:38, len:14)
-			// \r                                 (head:52, len: 1)
-			//  - Albert Einstein[EOF]            (head:53, len:18)
+            // invalid range (before begin to middle)
+            MyAssert.Throws<AssertException>(delegate
+            {
+                TextUtil.LHI_Delete(lhi, lds, lii, text, -1, 5);
+            });
 
-			// delete only one EOL code
-			//----
-			// "keep it as simple as possible\r\n (head: 0, len:31)
-			// but\n                              (head:32, len: 4)
-			// \r                                 (head:36, len: 1)
-			// not simpler."\r                    (head:37, len:14)
-			// \r                                 (head:51, len: 1)
-			//  - Albert Einstein[EOF]            (head:52, len:18)
-			//----
-			for( int i=0; i<lds.Count; i++ )
-				lds[i] = LineDirtyState.Clean;
-			TextUtil.LHI_Delete( lhi, lds, text, 32, 33 );
-			text.RemoveAt( 32 );
-			Assert.AreEqual( "0 32 36 37 51 52", lhi.ToString() );
-			Assert.AreEqual( "CDCCCC", MakeLdsText(lds) );
+            //--- delete range between different lines ---
+            text.Clear();
+            lhi.Clear(); lhi.Add(0);
+            lds.Clear(); lds.Add(LineDirtyState.Clean);
+            lii.Clear(); lii.Add(-1);
+            TextUtil.LHI_Insert(lhi, lds, lii, text, TestData, 0);
+            text.Add(TestData.ToCharArray());
+            // "keep it as simple as possible\r\n (head: 0, len:31)
+            // \n                                 (head:32, len: 1)
+            // but\n                              (head:33, len: 4)
+            // \r                                 (head:37, len: 1)
+            // not simpler."\r                    (head:38, len:14)
+            // \r                                 (head:52, len: 1)
+            //  - Albert Einstein[EOF]            (head:53, len:18)
 
-			// delete middle of the first line to not EOF pos
-			//----
-			// "keep it as simple as not simpler."\r (head: 0, len:35)
-			// \r                                    (head:36, len: 1)
-			//  - Albert Einstein[EOF]               (head:37, len:18)
-			//----
-			for( int i=0; i<lds.Count; i++ )
-				lds[i] = LineDirtyState.Clean;
-			TextUtil.LHI_Delete( lhi, lds, text, 22, 37 );
-			text.RemoveRange( 22, 37 );
-			Assert.AreEqual( "0 36 37", lhi.ToString() );
-			Assert.AreEqual( "DCC", MakeLdsText(lds) );
+            // delete only one EOL code
+            //----
+            // "keep it as simple as possible\r\n (head: 0, len:31)
+            // but\n                              (head:32, len: 4)
+            // \r                                 (head:36, len: 1)
+            // not simpler."\r                    (head:37, len:14)
+            // \r                                 (head:51, len: 1)
+            //  - Albert Einstein[EOF]            (head:52, len:18)
+            //----
+            for (int i = 0; i < lds.Count; i++)
+                lds[i] = LineDirtyState.Clean;
+            for (int i = 0; i < lii.Count; i++)
+                lii[i] = -1;
+            TextUtil.LHI_Delete(lhi, lds, lii, text, 32, 33);
+            text.RemoveAt(32);
+            Assert.AreEqual("0 32 36 37 51 52", lhi.ToString());
+            Assert.AreEqual("CDCCCC", MakeLdsText(lds));
+            Assert.AreEqual("NNNNNN", MakeLiiText(lii));
 
-			// delete all
-			//----
-			// [EOF] (head:0, len:0)
-			//----
-			for( int i=0; i<lds.Count; i++ )
-				lds[i] = LineDirtyState.Clean;
-			TextUtil.LHI_Delete( lhi, lds, text, 0, 55 );
-			text.RemoveRange( 0, 55 );
-			Assert.AreEqual( "0", lhi.ToString() );
-			Assert.AreEqual( "D", MakeLdsText(lds) );
+            // delete middle of the first line to not EOF pos
+            //----
+            // "keep it as simple as not simpler."\r (head: 0, len:35)
+            // \r                                    (head:36, len: 1)
+            //  - Albert Einstein[EOF]               (head:37, len:18)
+            //----
+            for (int i = 0; i < lds.Count; i++)
+                lds[i] = LineDirtyState.Clean;
+            for (int i = 0; i < lii.Count; i++)
+                lii[i] = -1;
+            TextUtil.LHI_Delete(lhi, lds, lii, text, 22, 37);
+            text.RemoveRange(22, 37);
+            Assert.AreEqual("0 36 37", lhi.ToString());
+            Assert.AreEqual("DCC", MakeLdsText(lds));
+            Assert.AreEqual("NNN", MakeLiiText(lii));
 
-			//--- special care about CR+LF ---
-			// (1) deletion creates a new CR+LF
-			// (2) deletion breaks a CR+LF at the left side of the deletion range
-			// (3) deletion breaks a CR+LF at the left side of the deletion range
-			//--------------------------------
-			// (1)
-			{
-				text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-				TextUtil.LHI_Insert( lhi, lds, text, "foo\rx\nbar", 0 );
-				text.Add( "foo\rx\nbar".ToCharArray() );
+            // delete all
+            //----
+            // [EOF] (head:0, len:0)
+            //----
+            for (int i = 0; i < lds.Count; i++)
+                lds[i] = LineDirtyState.Clean;
+            for (int i = 0; i < lii.Count; i++)
+                lii[i] = -1;
+            TextUtil.LHI_Delete(lhi, lds, lii, text, 0, 55);
+            text.RemoveRange(0, 55);
+            Assert.AreEqual("0", lhi.ToString());
+            Assert.AreEqual("D", MakeLdsText(lds));
+            Assert.AreEqual("N", MakeLiiText(lii));
 
-				for( int i=0; i<lds.Count; i++ )
-					lds[i] = LineDirtyState.Clean;
-				TextUtil.LHI_Delete( lhi, lds, text, 4, 5 );
-				text.RemoveRange( 4, 5 );
-				Assert.AreEqual( "0 5", lhi.ToString() );
-				Assert.AreEqual( "DC", MakeLdsText(lds) );
-			}
+            //--- special care about CR+LF ---
+            // (1) deletion creates a new CR+LF
+            // (2) deletion breaks a CR+LF at the left side of the deletion range
+            // (3) deletion breaks a CR+LF at the left side of the deletion range
+            //--------------------------------
+            // (1)
+            {
+                text.Clear();
+                lhi.Clear(); lhi.Add(0);
+                lds.Clear(); lds.Add(LineDirtyState.Clean);
+                lii.Clear(); lii.Add(0);
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "foo\rx\nbar", 0);
+                text.Add("foo\rx\nbar".ToCharArray());
 
-			// (2)
-			{
-				text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-				TextUtil.LHI_Insert( lhi, lds, text, "foo\r\nbar", 0 );
-				text.Add( "foo\r\nbar".ToCharArray() );
+                for (int i = 0; i < lds.Count; i++)
+                    lds[i] = LineDirtyState.Clean;
+                for (int i = 0; i < lii.Count; i++)
+                    lii[i] = -1;
+                TextUtil.LHI_Delete(lhi, lds, lii, text, 4, 5);
+                text.RemoveRange(4, 5);
+                Assert.AreEqual("0 5", lhi.ToString());
+                Assert.AreEqual("DC", MakeLdsText(lds));
+                Assert.AreEqual("NN", MakeLiiText(lii));
+            }
 
-				for( int i=0; i<lds.Count; i++ )
-					lds[i] = LineDirtyState.Clean;
-				TextUtil.LHI_Delete( lhi, lds, text, 4, 6 );
-				text.RemoveRange( 4, 6 );
-				Assert.AreEqual( "0 4", lhi.ToString() );
-				Assert.AreEqual( "DD", MakeLdsText(lds) );
-			}
+            // (2)
+            {
+                text.Clear();
+                lhi.Clear(); lhi.Add(0);
+                lds.Clear(); lds.Add(LineDirtyState.Clean);
+                lii.Clear(); lii.Add(0);
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "foo\r\nbar", 0);
+                text.Add("foo\r\nbar".ToCharArray());
 
-			// (3)
-			{
-				text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-				TextUtil.LHI_Insert( lhi, lds, text, "foo\r\nbar", 0 );
-				text.Add( "foo\r\nbar".ToCharArray() );
+                for (int i = 0; i < lds.Count; i++)
+                    lds[i] = LineDirtyState.Clean;
+                for (int i = 0; i < lii.Count; i++)
+                    lii[i] = -1;
+                TextUtil.LHI_Delete(lhi, lds, lii, text, 4, 6);
+                text.RemoveRange(4, 6);
+                Assert.AreEqual("0 4", lhi.ToString());
+                Assert.AreEqual("DD", MakeLdsText(lds));
+                Assert.AreEqual("NN", MakeLiiText(lii));
+            }
 
-				for( int i=0; i<lds.Count; i++ )
-					lds[i] = LineDirtyState.Clean;
-				TextUtil.LHI_Delete( lhi, lds, text, 2, 4 );
-				text.RemoveRange( 2, 4 );
-				Assert.AreEqual( "0 3", lhi.ToString() );
-				Assert.AreEqual( "DC", MakeLdsText(lds) );
-			}
+            // (3)
+            {
+                text.Clear();
+                lhi.Clear(); lhi.Add(0);
+                lds.Clear(); lds.Add(LineDirtyState.Clean);
+                lii.Clear(); lii.Add(0);
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "foo\r\nbar", 0);
+                text.Add("foo\r\nbar".ToCharArray());
 
-			// (1)+(2)+(3)
-			{
-				text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-				TextUtil.LHI_Insert( lhi, lds, text, "\r\nfoo\r\n", 0 );
-				text.Add( "\r\nfoo\r\n".ToCharArray() );
+                for (int i = 0; i < lds.Count; i++)
+                    lds[i] = LineDirtyState.Clean;
+                for (int i = 0; i < lii.Count; i++)
+                    lii[i] = -1;
+                TextUtil.LHI_Delete(lhi, lds, lii, text, 2, 4);
+                text.RemoveRange(2, 4);
+                Assert.AreEqual("0 3", lhi.ToString());
+                Assert.AreEqual("DC", MakeLdsText(lds));
+                Assert.AreEqual("NN", MakeLiiText(lii));
+            }
 
-				for( int i=0; i<lds.Count; i++ )
-					lds[i] = LineDirtyState.Clean;
-				TextUtil.LHI_Delete( lhi, lds, text, 1, 6 );
-				text.RemoveRange( 1, 6 );
-				Assert.AreEqual( "0 2", lhi.ToString() );
-				Assert.AreEqual( "DC", MakeLdsText(lds) );
-			}
+            // (1)+(2)+(3)
+            {
+                text.Clear();
+                lhi.Clear(); lhi.Add(0);
+                lds.Clear(); lds.Add(LineDirtyState.Clean);
+                lii.Clear(); lii.Add(0);
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "\r\nfoo\r\n", 0);
+                text.Add("\r\nfoo\r\n".ToCharArray());
 
-			//--- misc ---
-			// insert "\n" after '\r' at end of document (boundary check for LHI_Insert)
-			{
-				text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-				TextUtil.LHI_Insert( lhi, lds, text, "\r", 0 );
-				text.Add( "\r".ToCharArray() );
+                for (int i = 0; i < lds.Count; i++)
+                    lds[i] = LineDirtyState.Clean;
+                for (int i = 0; i < lii.Count; i++)
+                    lii[i] = -1;
+                TextUtil.LHI_Delete(lhi, lds, lii, text, 1, 6);
+                text.RemoveRange(1, 6);
+                Assert.AreEqual("0 2", lhi.ToString());
+                Assert.AreEqual("DC", MakeLdsText(lds));
+                Assert.AreEqual("NN", MakeLiiText(lii));
+            }
 
-				for( int i=0; i<lds.Count; i++ )
-					lds[i] = LineDirtyState.Clean;
-				TextUtil.LHI_Insert( lhi, lds, text, "\n", 1 );
-				text.Add( "\n".ToCharArray() );
-				Assert.AreEqual( "0 2", lhi.ToString() );
-				Assert.AreEqual( "CD", MakeLdsText(lds) );
-			}
+            //--- misc ---
+            // insert "\n" after '\r' at end of document (boundary check for LHI_Insert)
+            {
+                text.Clear();
+                lhi.Clear(); lhi.Add(0);
+                lds.Clear(); lds.Add(LineDirtyState.Clean);
+                lii.Clear(); lii.Add(0);
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "\r", 0);
+                text.Add("\r".ToCharArray());
 
-			// insert "\n" after '\r' at end of document (boundary check for LHI_Delete)
-			{
-				text.Clear(); lhi.Clear(); lhi.Add( 0 ); lds.Clear(); lds.Add( LineDirtyState.Clean );
-				TextUtil.LHI_Insert( lhi, lds, text, "\r\n", 0 );
-				text.Add( "\r\n".ToCharArray() );
+                for (int i = 0; i < lds.Count; i++)
+                    lds[i] = LineDirtyState.Clean;
+                for (int i = 0; i < lii.Count; i++)
+                    lii[i] = -1;
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "\n", 1);
+                text.Add("\n".ToCharArray());
+                Assert.AreEqual("0 2", lhi.ToString());
+                Assert.AreEqual("CD", MakeLdsText(lds));
+                Assert.AreEqual("NN", MakeLiiText(lii));
+            }
 
-				for( int i=0; i<lds.Count; i++ )
-					lds[i] = LineDirtyState.Clean;
-				TextUtil.LHI_Delete( lhi, lds, text, 1, 2 );
-				text.RemoveRange( 1, 2 );
-				Assert.AreEqual( "0 1", lhi.ToString() );
-				Assert.AreEqual( "DD", MakeLdsText(lds) );
-			}
-		}
+            // insert "\n" after '\r' at end of document (boundary check for LHI_Delete)
+            {
+                text.Clear();
+                lhi.Clear(); lhi.Add(0);
+                lds.Clear(); lds.Add(LineDirtyState.Clean);
+                lii.Clear(); lii.Add(0);
+                TextUtil.LHI_Insert(lhi, lds, lii, text, "\r\n", 0);
+                text.Add("\r\n".ToCharArray());
+
+                for (int i = 0; i < lds.Count; i++)
+                    lds[i] = LineDirtyState.Clean;
+                for (int i = 0; i < lii.Count; i++)
+                    lii[i] = -1;
+                TextUtil.LHI_Delete(lhi, lds, lii, text, 1, 2);
+                text.RemoveRange(1, 2);
+                Assert.AreEqual("0 1", lhi.ToString());
+                Assert.AreEqual("DD", MakeLdsText(lds));
+                Assert.AreEqual("NN", MakeLiiText(lii));
+            }
+        }
 
 		#region Utilities
 		static void MakeTestData( out TextBuffer text, out SplitArray<int> lhi )
 		{
-			SplitArray<LineDirtyState> lds = new SplitArray<LineDirtyState>( 8 );
+            SplitArray<LineDirtyState> lds = new SplitArray<LineDirtyState>(8);
+            SplitArray<int> lii = new SplitArray<int>(8);
 
-			MakeTestData( out text, out lhi, out lds );
+            MakeTestData(out text, out lhi, out lds, out lii);
 		}
 
-		static void MakeTestData( out TextBuffer text, out SplitArray<int> lhi, out SplitArray<LineDirtyState> lds )
-		{
-			text = new TextBuffer( 1, 1 );
-			lhi = new SplitArray<int>( 1, 8 );
-			lds = new SplitArray<LineDirtyState>( 1 );
+        static void MakeTestData(out TextBuffer text, out SplitArray<int> lhi, out SplitArray<LineDirtyState> lds, out SplitArray<int> lii)
+        {
+            text = new TextBuffer(1, 1);
+            lhi = new SplitArray<int>(1, 8);
+            lds = new SplitArray<LineDirtyState>(1);
+            lii = new SplitArray<int>(1);
 
-			lhi.Add( 0 );
-			lds.Add( LineDirtyState.Clean );
+            lhi.Add(0);
+            lds.Add(LineDirtyState.Clean);
+            lii.Add(-1);
 
-			TextUtil.LHI_Insert( lhi, lds, text, TestData, 0 );
-			text.Insert( 0, TestData.ToCharArray() );
-		}
+            TextUtil.LHI_Insert(lhi, lds, lii, text, TestData, 0);
+            text.Insert(0, TestData.ToCharArray());
+        }
 
 		static string MakeLdsText( SplitArray<LineDirtyState> lds )
 		{
@@ -605,6 +705,24 @@ namespace Sgry.Azuki.Test
 			}
 			return buf.ToString();
 		}
-		#endregion
-	}
+
+        static string MakeLiiText(SplitArray<int> lii)
+        {
+            StringBuilder buf = new StringBuilder(32);
+
+            for (int i = 0; i < lii.Count; i++)
+            {
+                char ch = '#';
+
+                switch (lii[i])
+                {
+                    case -1: ch = 'N'; break;
+                    default: ch = 'E'; break;
+                }
+                buf.Append(ch);
+            }
+            return buf.ToString();
+        }
+        #endregion
+    }
 }

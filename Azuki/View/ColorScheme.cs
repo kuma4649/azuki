@@ -70,8 +70,9 @@ namespace Sgry.Azuki
 			HighlightColor = another.HighlightColor;
 			LineNumberFore = another.LineNumberFore;
 			LineNumberBack = another.LineNumberBack;
-			DirtyLineBar = another.DirtyLineBar;
-			CleanedLineBar = another.CleanedLineBar;
+            DirtyLineBar = another.DirtyLineBar;
+            IconBarBack = another.IconBarBack;
+            CleanedLineBar = another.CleanedLineBar;
 			RightEdgeColor = another.RightEdgeColor;
 			MatchedBracketFore = another.MatchedBracketFore;
 			MatchedBracketBack = another.MatchedBracketBack;
@@ -274,7 +275,8 @@ namespace Sgry.Azuki
 			Color hana_asagi = Color.FromArgb( 0x001b7792 ); // hana-asagi iro (japanese)
 			Color waka_midori = Color.FromArgb( 0x00a8efaf ); // waka-midori iro (japanese)
 			Color himawari = Color.FromArgb( 0x00fff10f ); // himawari iro (japanese)
-			Color sax_blue = Color.FromArgb( 0x004648b8 );
+            Color shiraumenezu = Color.FromArgb(0x00e5e4e6); // 白梅鼠 (japanese)
+            Color sax_blue = Color.FromArgb( 0x004648b8 );
 			Color oreillyPerl = Color.FromArgb( 0x000097c2 );
 
 			SetColor( CharClass.Normal, Color.Black, Color.White );
@@ -329,6 +331,7 @@ namespace Sgry.Azuki
 			LineNumberFore = hana_asagi;
 			LineNumberBack = Color.Transparent;
 			DirtyLineBar = himawari;
+            IconBarBack = shiraumenezu;
 			CleanedLineBar = waka_midori;
 			RightEdgeColor = WhiteSpaceColor;
 			MatchedBracketFore = Color.Transparent;
@@ -419,10 +422,15 @@ namespace Sgry.Azuki
 		/// </summary>
 		public Color DirtyLineBar;
 
-		/// <summary>
-		/// Color of the dirt bar at left of a modified but saved (cleaned) line.
-		/// </summary>
-		public Color CleanedLineBar;
+        /// <summary>
+        /// Color of the icon bar.
+        /// </summary>
+        public Color IconBarBack;
+
+        /// <summary>
+        /// Color of the dirt bar at left of a modified but saved (cleaned) line.
+        /// </summary>
+        public Color CleanedLineBar;
 
 		/// <summary>
 		/// Color of the right edge of text area (line wrapping edge).

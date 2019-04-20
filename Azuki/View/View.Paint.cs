@@ -400,46 +400,71 @@ namespace Sgry.Azuki
 			g.DrawLine( XofTextArea, bottom, _VisibleSize.Width, bottom );
 		}
 
-		/// <summary>
-		/// Draws dirt bar.
-		/// </summary>
-		protected void DrawDirtBar( IGraphics g, int lineTopY, int logicalLineIndex )
+        /// <summary>
+        /// Draws dirt bar.
+        /// </summary>
+        protected void DrawDirtBar(IGraphics g, int lineTopY, int logicalLineIndex)
+        {
+            Debug.Assert(((lineTopY - YofTextArea) % LineSpacing) == 0, "((lineTopY-YofTextArea) % LineSpacing) is not 0 but " + (lineTopY - YofTextArea) % LineSpacing);
+            LineDirtyState dirtyState;
+            Color backColor;
+
+            // get dirty state of the line
+            if (0 <= logicalLineIndex && logicalLineIndex < Document.LineCount)
+                dirtyState = Document.GetLineDirtyState(logicalLineIndex);
+            else
+                dirtyState = LineDirtyState.Clean;
+
+            // choose background color
+            if (dirtyState == LineDirtyState.Cleaned)
+            {
+                backColor = ColorScheme.CleanedLineBar;
+                if (backColor == Color.Transparent)
+                {
+                    backColor = Utl.BackColorOfLineNumber(ColorScheme);
+                }
+            }
+            else if (dirtyState == LineDirtyState.Dirty)
+            {
+                backColor = ColorScheme.DirtyLineBar;
+                if (backColor == Color.Transparent)
+                {
+                    backColor = Utl.BackColorOfLineNumber(ColorScheme);
+                }
+            }
+            else
+            {
+                backColor = Utl.BackColorOfLineNumber(ColorScheme);
+            }
+
+            // fill
+            g.BackColor = backColor;
+            g.FillRectangle(XofDirtBar, lineTopY, DirtBarWidth, LineSpacing);
+        }
+
+        /// <summary>
+        /// Draws Icon bar.
+        /// </summary>
+        protected void DrawIconBar( IGraphics g, int lineTopY, int logicalLineIndex )
 		{
 			Debug.Assert( ((lineTopY-YofTextArea) % LineSpacing) == 0, "((lineTopY-YofTextArea) % LineSpacing) is not 0 but " + (lineTopY-YofTextArea) % LineSpacing );
-			LineDirtyState dirtyState;
-			Color backColor;
 
-			// get dirty state of the line
-			if( 0 <= logicalLineIndex && logicalLineIndex < Document.LineCount )
-				dirtyState = Document.GetLineDirtyState( logicalLineIndex );
-			else
-				dirtyState = LineDirtyState.Clean;
+            Color backColor = Utl.BackColorOfIconBar(ColorScheme);
+            int imgInd = -1;
 
-			// choose background color
-			if( dirtyState == LineDirtyState.Cleaned )
-			{
-				backColor = ColorScheme.CleanedLineBar;
-				if( backColor == Color.Transparent )
-				{
-					backColor = Utl.BackColorOfLineNumber( ColorScheme );
-				}
-			}
-			else if( dirtyState == LineDirtyState.Dirty )
-			{
-				backColor = ColorScheme.DirtyLineBar;
-				if( backColor == Color.Transparent )
-				{
-					backColor = Utl.BackColorOfLineNumber( ColorScheme );
-				}
-			}
-			else
-			{
-				backColor = Utl.BackColorOfLineNumber( ColorScheme );
-			}
+            // get dirty state of the line
+            if (0 <= logicalLineIndex && logicalLineIndex < Document.LineCount)
+            {
+                imgInd = Document.GetLineIconIndex(logicalLineIndex);
+            }
 
-			// fill
-			g.BackColor = backColor;
-			g.FillRectangle( XofDirtBar, lineTopY, DirtBarWidth, LineSpacing );
+            g.BackColor = backColor;
+			g.FillRectangle( XofIconBar, lineTopY, IconBarWidth, LineSpacing );
+            if (imgInd != -1 && IconBarImageList != null && IconBarImageList.Images.Count > 0 && IconBarImageList.Images.Count > imgInd)
+            {
+                g.DrawImage(IconBarImageList.Images[imgInd], XofIconBar, lineTopY, IconBarWidth, IconBarWidth);
+            }
+            
 		}
 
 		/// <summary>
@@ -452,17 +477,23 @@ namespace Sgry.Azuki
 		protected void DrawLeftOfLine( IGraphics g, int lineTopY, int lineNumber, bool drawsText )
 		{
 			DebugUtl.Assert( (lineTopY % LineSpacing) == (YofTextArea % LineSpacing), "lineTopY:"+lineTopY+", LineSpacing:"+LineSpacing+", YofTextArea:"+YofTextArea );
-			Point pos = new Point( XofLineNumberArea, lineTopY );
-			
-			// fill line number area
-			if( ShowLineNumber )
+            Point pos = new Point(XofLineNumberArea, lineTopY);
+
+            // fill icon bar
+            if (ShowsIconBar)
+            {
+                DrawIconBar(g, lineTopY, lineNumber - 1);
+            }
+
+            // fill line number area
+            if ( ShowLineNumber )
 			{
 				g.BackColor = Utl.BackColorOfLineNumber( ColorScheme );
-				g.FillRectangle( XofLineNumberArea, pos.Y, LineNumAreaWidth, LineSpacing );
-			}
+                g.FillRectangle(XofLineNumberArea, pos.Y, LineNumAreaWidth, LineSpacing);
+            }
 
-			// fill dirt bar
-			if( ShowsDirtBar )
+            // fill dirt bar
+            if ( ShowsDirtBar )
 			{
 				DrawDirtBar( g, lineTopY, lineNumber-1 );
 			}
@@ -670,8 +701,8 @@ namespace Sgry.Azuki
 			// fill area above the line-number area [copied from DrawLineNumber]
 			g.BackColor = Utl.BackColorOfLineNumber( ColorScheme );
 			g.FillRectangle(
-					XofLineNumberArea, YofTopMargin,
-					XofTextArea-XofLineNumberArea, TopMargin
+					XofIconBar, YofTopMargin,
+					XofTextArea- XofIconBar, TopMargin
 				);
 			
 			// fill left margin area [copied from DrawLineNumber]
@@ -1216,12 +1247,20 @@ namespace Sgry.Azuki
 					return cs.BackColor;
 			}
 
-			/// <summary>
-			/// Calculate x-coordinate of the next tab stop.
-			/// </summary>
-			/// <param name="x">calculates next tab stop from this (X coordinate in virtual space)</param>
-			/// <param name="tabWidthInPx">tab width (in pixel)</param>
-			public static int CalcNextTabStop( int x, int tabWidthInPx )
+            public static Color BackColorOfIconBar(ColorScheme cs)
+            {
+                if (cs.IconBarBack != Color.Transparent)
+                    return cs.IconBarBack;
+                else
+                    return cs.BackColor;
+            }
+
+            /// <summary>
+            /// Calculate x-coordinate of the next tab stop.
+            /// </summary>
+            /// <param name="x">calculates next tab stop from this (X coordinate in virtual space)</param>
+            /// <param name="tabWidthInPx">tab width (in pixel)</param>
+            public static int CalcNextTabStop( int x, int tabWidthInPx )
 			{
 				DebugUtl.Assert( 0 < tabWidthInPx );
 				return ((x / tabWidthInPx) + 1) * tabWidthInPx;

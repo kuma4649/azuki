@@ -39,6 +39,9 @@ namespace Sgry.Azuki
 		HighlightsMatchedBracket= 0x0200,
 
 		/// <summary>Whether to include wrapped screen lines for line numbering.</summary>
-		UseScreenLineNumber	= 0x0400
-	}
+		UseScreenLineNumber	= 0x0400,
+
+        /// <summary>Shows 'icon bar'.</summary>
+        ShowsIconBar = 0x0800
+    }
 }

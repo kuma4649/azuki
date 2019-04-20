@@ -156,4 +156,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="ADDED_FUTURE.txt" />
+  </ItemGroup>
 </Project>

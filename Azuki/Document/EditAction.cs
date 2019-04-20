@@ -26,31 +26,33 @@ namespace Sgry.Azuki
 		string _InsertedText;
 		int _OldAnchorIndex;
 		int _OldCaretIndex;
-		LineDirtyStateUndoInfo _LdsUndoInfo;
-		EditAction _Next = null;
-		#endregion
+        LineDirtyStateUndoInfo _LdsUndoInfo;
+        LineIconIndexUndoInfo _LiiUndoInfo;
+        EditAction _Next = null;
+        #endregion
 
-		#region Init / Dispose
-		/// <summary>
-		/// Creates a new instance.
-		/// </summary>
-		/// <param name="doc">document that the replacement has occured</param>
-		/// <param name="index">index indicatating where the replacement has occured</param>
-		/// <param name="deletedText">deleted text by the replacement</param>
-		/// <param name="insertedText">inserted text by the replacement</param>
-		/// <param name="oldAnchorIndex">index of the selection anchor at when the replacement has occured</param>
-		/// <param name="oldCaretIndex">index of the caret at when the replacement has occured</param>
-		/// <param name="ldsUndoInfo">line dirty states before the replacement</param>
-		public EditAction( Document doc, int index, string deletedText, string insertedText, int oldAnchorIndex, int oldCaretIndex, LineDirtyStateUndoInfo ldsUndoInfo )
-		{
-			_Document = doc;
-			_Index = index;
-			_DeletedText = deletedText;
-			_InsertedText = insertedText;
-			_OldAnchorIndex = oldAnchorIndex;
-			_OldCaretIndex = oldCaretIndex;
-			_LdsUndoInfo = ldsUndoInfo;
-		}
+        #region Init / Dispose
+        /// <summary>
+        /// Creates a new instance.
+        /// </summary>
+        /// <param name="doc">document that the replacement has occured</param>
+        /// <param name="index">index indicatating where the replacement has occured</param>
+        /// <param name="deletedText">deleted text by the replacement</param>
+        /// <param name="insertedText">inserted text by the replacement</param>
+        /// <param name="oldAnchorIndex">index of the selection anchor at when the replacement has occured</param>
+        /// <param name="oldCaretIndex">index of the caret at when the replacement has occured</param>
+        /// <param name="ldsUndoInfo">line dirty states before the replacement</param>
+        public EditAction(Document doc, int index, string deletedText, string insertedText, int oldAnchorIndex, int oldCaretIndex, LineDirtyStateUndoInfo ldsUndoInfo, LineIconIndexUndoInfo liiUndoInfo)
+        {
+            _Document = doc;
+            _Index = index;
+            _DeletedText = deletedText;
+            _InsertedText = insertedText;
+            _OldAnchorIndex = oldAnchorIndex;
+            _OldCaretIndex = oldCaretIndex;
+            _LdsUndoInfo = ldsUndoInfo;
+            _LiiUndoInfo = liiUndoInfo;
+        }
 		#endregion
 
 		#region Operation
@@ -108,8 +110,19 @@ namespace Sgry.Azuki
 							);
 					}
 				}
-			}
-			_Document.IsRecordingHistory = wasRecordingHistory;
+                if (_LiiUndoInfo != null)
+                {
+                    Debug.Assert(0 < _LiiUndoInfo.DeletedStates.Length);
+                    for (int i = 0; i < _LiiUndoInfo.DeletedStates.Length; i++)
+                    {
+                        _Document.SetLineIconIndex(
+                                _LiiUndoInfo.LineIndex + i,
+                                _LiiUndoInfo.DeletedStates[i]
+                            );
+                    }
+                }
+            }
+            _Document.IsRecordingHistory = wasRecordingHistory;
 		}
 
 		/// <summary>
@@ -288,4 +301,34 @@ namespace Sgry.Azuki
 #		endif
 		#endregion
 	}
+
+    class LineIconIndexUndoInfo
+    {
+        public int LineIndex;
+        public int[] DeletedStates = null;
+
+        #region Debug code
+#if DEBUG
+        /// <summary>ToString for debug</summary>
+        public override string ToString()
+        {
+            System.Text.StringBuilder text = new System.Text.StringBuilder(64);
+
+            text.Append(LineIndex);
+            if (0 < DeletedStates.Length)
+            {
+                text.Append("-{" + DeletedStates[0]);
+                for (int i = 1; i < DeletedStates.Length; i++)
+                {
+                    text.Append("," + DeletedStates[i]);
+                }
+                text.Append('}');
+            }
+
+            return text.ToString();
+        }
+
+#endif
+        #endregion
+    }
 }

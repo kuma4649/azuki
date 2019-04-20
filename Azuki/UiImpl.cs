@@ -815,26 +815,35 @@ namespace Sgry.Azuki
 					// set selection
 					if( onLineNumberArea )
 					{
-						//--- line selection ---
-						_UI.SelectionMode = TextDataType.Line;
-						if( e.Shift )
-						{
-							//--- expanding line selection ---
-							// expand selection to one char next of clicked position
-							// (if caret is at head of a line,
-							// the line will not be selected by SetSelection.)
-							int newCaretIndex = clickedIndex;
-							if( newCaretIndex+1 < Document.Length )
-							{
-								newCaretIndex++;
-							}
-							Document.SetSelection( Document.AnchorIndex, newCaretIndex, View );
-						}
-						else
-						{
-							//--- setting line selection ---
-							Document.SetSelection( clickedIndex, clickedIndex, View );
-						}
+                        if (_UI.ShowsIconBar && _UI.View.XofIconBar <= e.Location.X && _UI.View.XofIconBar + _UI.View.IconBarWidth > e.Location.X)
+                        {
+                            int lineIndex = _View.GetLineIndexFromCharIndex(clickedIndex);
+                            _UI.InvokeIconBarClicked(lineIndex);
+                            _View.Paint(g, new Rectangle(_View.XofIconBar, _View.YofLine(lineIndex), _View.IconBarWidth, _View.IconBarWidth));
+                        }
+                        else
+                        {
+                            //--- line selection ---
+                            _UI.SelectionMode = TextDataType.Line;
+                            if (e.Shift)
+                            {
+                                //--- expanding line selection ---
+                                // expand selection to one char next of clicked position
+                                // (if caret is at head of a line,
+                                // the line will not be selected by SetSelection.)
+                                int newCaretIndex = clickedIndex;
+                                if (newCaretIndex + 1 < Document.Length)
+                                {
+                                    newCaretIndex++;
+                                }
+                                Document.SetSelection(Document.AnchorIndex, newCaretIndex, View);
+                            }
+                            else
+                            {
+                                //--- setting line selection ---
+                                Document.SetSelection(clickedIndex, clickedIndex, View);
+                            }
+                        }
 					}
 					else if( e.Shift )
 					{

@@ -22,8 +22,9 @@ namespace Sgry.Azuki
 		readonly TextBuffer _Buffer = new TextBuffer(4096, 1024);
 		readonly SplitArray<int> _LHI = new SplitArray<int>(64); // line head indexes
 		readonly SplitArray<LineDirtyState> _LDS = new SplitArray<LineDirtyState>(64);
-													// LDS = Line Dirty States
-		readonly EditHistory _History = new EditHistory();
+        // LDS = Line Dirty States
+        readonly SplitArray<int> _LII = new SplitArray<int>(64);// LII = Line Icon Index
+        readonly EditHistory _History = new EditHistory();
 		readonly SelectionManager _SelMan;
 		bool _IsRecordingHistory = true;
 		bool _IsSuppressingDirtyStateChangedEvent = false;
@@ -67,37 +68,41 @@ namespace Sgry.Azuki
 			_LHI.Clear();
 			_LHI.Add( 0 );
 
-			// initialize LDS
-			_LDS.Clear();
-			_LDS.Add( 0 );
-		}
-		#endregion
+            // initialize LDS
+            _LDS.Clear();
+            _LDS.Add(0);
 
-		#region States
-		/// <summary>
-		/// Gets or sets whether any unsaved modifications exist or not.
-		/// </summary>
-		/// <remarks>
-		///   <para>
-		///   This property will be true if there is any unsaved modifications. Although Azuki
-		///   maintains almost all modification history in itself, it cannot detect when the
-		///   content was saved because saving content to file or other means is done outside of
-		///   it; done by the application using Azuki. Because of this, application is responsible
-		///   to set this property to False on saving content manually.
-		///   </para>
-		///   <para>
-		///   Note that attempting to set this property True by application code will raise an
-		///   InvalidOperationException. Because any document cannot be turned 'dirty' without
-		///   modification, and modification by Document.Replace automatically set this property
-		///   True so doing so in application code is not needed.
-		///   </para>
-		/// </remarks>
-		/// <exception cref="InvalidOperationException">
-		///   True was set as a new value.
-		///   - OR -
-		///   Modified while grouping UNDO actions.
-		/// </exception>
-		public bool IsDirty
+            // initialize LII
+            _LII.Clear();
+            _LII.Add(-1);
+        }
+        #endregion
+
+        #region States
+        /// <summary>
+        /// Gets or sets whether any unsaved modifications exist or not.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///   This property will be true if there is any unsaved modifications. Although Azuki
+        ///   maintains almost all modification history in itself, it cannot detect when the
+        ///   content was saved because saving content to file or other means is done outside of
+        ///   it; done by the application using Azuki. Because of this, application is responsible
+        ///   to set this property to False on saving content manually.
+        ///   </para>
+        ///   <para>
+        ///   Note that attempting to set this property True by application code will raise an
+        ///   InvalidOperationException. Because any document cannot be turned 'dirty' without
+        ///   modification, and modification by Document.Replace automatically set this property
+        ///   True so doing so in application code is not needed.
+        ///   </para>
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">
+        ///   True was set as a new value.
+        ///   - OR -
+        ///   Modified while grouping UNDO actions.
+        /// </exception>
+        public bool IsDirty
 		{
 			get{ return !_History.IsSavedState; }
 			set
@@ -190,10 +195,33 @@ namespace Sgry.Azuki
 			_LDS[lineIndex] = lds;
 		}
 
-		/// <summary>
-		/// Gets or sets whether this document is recording edit actions or not.
-		/// </summary>
-		public bool IsRecordingHistory
+        public int GetLineIconIndex(int lineIndex)
+        {
+            Debug.Assert(lineIndex <= _LII.Count);
+            Debug.Assert(_LII.Count == _LHI.Count);
+            if (lineIndex < 0 || LineCount < lineIndex)
+                throw new ArgumentOutOfRangeException("lineIndex", "lineIndex param is "
+                    + lineIndex + " but must be positive and equal to or less than " + LineCount);
+
+            if (_LII.Count <= lineIndex)
+            {
+                return -1;
+            }
+            return _LII[lineIndex];
+        }
+
+        public void SetLineIconIndex(int lineIndex, int lii)
+        {
+            Debug.Assert(lineIndex <= _LII.Count);
+            Debug.Assert(_LII.Count == _LHI.Count);
+
+            _LII[lineIndex] = lii;
+        }
+
+        /// <summary>
+        /// Gets or sets whether this document is recording edit actions or not.
+        /// </summary>
+        public bool IsRecordingHistory
 		{
 			get{ return _IsRecordingHistory; }
 			set{ _IsRecordingHistory = value; }
@@ -1006,9 +1034,12 @@ namespace Sgry.Azuki
 		/// </exception>
 		public void Replace( string text, int begin, int end )
 		{
-			Debug.Assert( _LHI.Count == _LDS.Count, "LHI.Count(" + _LHI.Count
-						  + ") is not LDS.Count(" + _LDS.Count + ")" );
-			if( begin < 0 || _Buffer.Count < begin )
+            Debug.Assert(_LHI.Count == _LDS.Count, "LHI.Count(" + _LHI.Count
+                          + ") is not LDS.Count(" + _LDS.Count + ")");
+            Debug.Assert(_LHI.Count == _LII.Count, "LHI.Count(" + _LHI.Count
+                          + ") is not LII.Count(" + _LII.Count + ")");
+
+            if ( begin < 0 || _Buffer.Count < begin )
 				throw new ArgumentOutOfRangeException( "begin", "Invalid index was given (begin:"
 													   + begin + ", Length:" + Length + ")." );
 			if( end < begin || _Buffer.Count < end )
@@ -1023,8 +1054,9 @@ namespace Sgry.Azuki
 			int oldCaret, caretDelta;
 			int newAnchor, newCaret;
 			EditAction undo;
-			LineDirtyStateUndoInfo ldsUndoInfo = null;
-			int affectedBeginLI = -1;
+            LineDirtyStateUndoInfo ldsUndoInfo = null;
+            LineIconIndexUndoInfo liiUndoInfo = null;
+            int affectedBeginLI = -1;
 			bool wasSavedState;
 
 			// Do nothing if the operation has no effect
@@ -1037,6 +1069,7 @@ namespace Sgry.Azuki
 			if( _IsRecordingHistory )
 			{
 				ldsUndoInfo = new LineDirtyStateUndoInfo();
+                liiUndoInfo = new LineIconIndexUndoInfo();
 
 				// calculate range of the lines which will be affectd by this replacement
 				affectedBeginLI = GetLineIndexFromCharIndex( begin );
@@ -1054,14 +1087,17 @@ namespace Sgry.Azuki
 				int affectedLineCount = affectedEndLI - affectedBeginLI + 1;
 				Debug.Assert( 0 < affectedLineCount );
 
-				// store current state of the lines as 'deleted' history
-				ldsUndoInfo.LineIndex = affectedBeginLI;
-				ldsUndoInfo.DeletedStates = new LineDirtyState[ affectedLineCount ];
-				for( int i=0; i<affectedLineCount; i++ )
+                // store current state of the lines as 'deleted' history
+                ldsUndoInfo.LineIndex = affectedBeginLI;
+                ldsUndoInfo.DeletedStates = new LineDirtyState[affectedLineCount];
+                liiUndoInfo.LineIndex = affectedBeginLI;
+                liiUndoInfo.DeletedStates = new int[affectedLineCount];
+                for ( int i=0; i<affectedLineCount; i++ )
 				{
-					ldsUndoInfo.DeletedStates[i] = _LDS[ affectedBeginLI + i ];
-				}
-			}
+                    ldsUndoInfo.DeletedStates[i] = _LDS[affectedBeginLI + i];
+                    liiUndoInfo.DeletedStates[i] = _LII[affectedBeginLI + i];
+                }
+            }
 
 			// keep copy of the part which will be deleted by this replacement
 			if( begin < end )
@@ -1078,9 +1114,9 @@ namespace Sgry.Azuki
 			// delete target range
 			if( begin < end )
 			{
-				// manage line head indexes and delete content
-				TextUtil.LHI_Delete( _LHI, _LDS, _Buffer, begin, end );
-				_Buffer.RemoveRange( begin, end );
+                // manage line head indexes and delete content
+                TextUtil.LHI_Delete(_LHI, _LDS, _LII, _Buffer, begin, end);
+                _Buffer.RemoveRange( begin, end );
 
 				// manage caret/anchor index
 				if( begin < newCaret )
@@ -1100,9 +1136,9 @@ namespace Sgry.Azuki
 			// then, insert text
 			if( 0 < text.Length )
 			{
-				// manage line head indexes and insert content
-				TextUtil.LHI_Insert( _LHI, _LDS, _Buffer, text, begin );
-				_Buffer.Insert( begin, text.ToCharArray() );
+                // manage line head indexes and insert content
+                TextUtil.LHI_Insert(_LHI, _LDS, _LII, _Buffer, text, begin);
+                _Buffer.Insert( begin, text.ToCharArray() );
 
 				// manage caret/anchor index
 				if( begin <= newCaret )
@@ -1126,8 +1162,8 @@ namespace Sgry.Azuki
 			// stack UNDO history
 			if( _IsRecordingHistory )
 			{
-				undo = new EditAction( this, begin, oldText, text, oldAnchor, oldCaret,
-									   ldsUndoInfo );
+                undo = new EditAction(this, begin, oldText, text, oldAnchor, oldCaret,
+                                       ldsUndoInfo, liiUndoInfo);
 				_History.Add( undo );
 			}
 			_LastModifiedTime = DateTime.Now;
@@ -1143,11 +1179,13 @@ namespace Sgry.Azuki
 			// examine post assertions
 			Debug.Assert( newAnchor <= Length );
 			Debug.Assert( newCaret <= Length );
-			Debug.Assert( _LHI.Count == _LDS.Count, "LHI.Count(" + _LHI.Count
-						  + ") is not LDS.Count("+_LDS.Count+")" );
+            Debug.Assert(_LHI.Count == _LDS.Count, "LHI.Count(" + _LHI.Count
+                          + ") is not LDS.Count(" + _LDS.Count + ")");
+            Debug.Assert(_LHI.Count == _LII.Count, "LHI.Count(" + _LHI.Count
+                          + ") is not LII.Count(" + _LII.Count + ")");
 
-			// cast event
-			if( _IsSuppressingDirtyStateChangedEvent == false
+            // cast event
+            if ( _IsSuppressingDirtyStateChangedEvent == false
 				&& _History.IsSavedState != wasSavedState )
 			{
 				InvokeDirtyStateChanged();
@@ -1638,22 +1676,26 @@ namespace Sgry.Azuki
 		{
 			_History.Clear();
 			_History.SetSavedState();
-			for( int i=0; i<_LDS.Count; i++ )
-			{
-				_LDS[i] = LineDirtyState.Clean;
-			}
-		}
+            for (int i = 0; i < _LDS.Count; i++)
+            {
+                _LDS[i] = LineDirtyState.Clean;
+            }
+            for (int i = 0; i < _LII.Count; i++)
+            {
+                _LII[i] = -1;
+            }
+        }
 
-		/// <summary>
-		/// Executes REDO.
-		/// </summary>
-		/// <remarks>
-		///   <para>
-		///   This method 'replays' the lastly UNDOed action if available. If there is no REDOable
-		///   action, this method will do nothing.
-		///   </para>
-		/// </remarks>
-		public void Redo()
+        /// <summary>
+        /// Executes REDO.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///   This method 'replays' the lastly UNDOed action if available. If there is no REDOable
+        ///   action, this method will do nothing.
+        ///   </para>
+        /// </remarks>
+        public void Redo()
 		{
 			// first of all, stop grouping actions
 			// (this must be done before evaluating CanRedo because EndUndo changes it)
@@ -2768,7 +2810,8 @@ namespace Sgry.Azuki
 				usage += _Buffer.Capacity * ( sizeof(char) + sizeof(CharClass) );
 				usage += _LHI.Capacity * sizeof(int);
 				usage += _LDS.Capacity * sizeof(LineDirtyState);
-				usage += _History.MemoryUsage;
+                usage += _LII.Capacity * sizeof(int);
+                usage += _History.MemoryUsage;
 				return usage;
 			}
 		}
