@@ -335,8 +335,8 @@ namespace Sgry.Azuki
 				}
 			}
 
-			// not found.
-			Plat.Inst.MessageBeep();
+            // not found.
+            if (!ui.View.Silence) Plat.Inst.MessageBeep();
 			return;
 		}
 		#endregion

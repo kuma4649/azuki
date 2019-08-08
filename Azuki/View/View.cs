@@ -259,7 +259,7 @@ namespace Sgry.Azuki
 			_LineNumAreaWidth
 				= g.MeasureText( _LastUsedLineNumberSample.ToString() ).Width + _SpaceWidth;
 			_DirtBarWidth = Math.Max( 3, _SpaceWidth >> 1 );
-            _IconBarWidth = 16;
+            _IconBarWidth = LineSpacing;
 
 			// update metrics related with horizontal ruler
 			_HRulerHeight = (int)( _LineHeight / GoldenRatio ) + 2;
@@ -518,6 +518,13 @@ namespace Sgry.Azuki
                 _UI.UpdateCaretGraphic();
                 Invalidate();
             }
+        }
+
+        private bool _Silence = false;
+        public bool Silence
+        {
+            get { return _Silence; }
+            set { _Silence = value; }
         }
 
         /// <summary>

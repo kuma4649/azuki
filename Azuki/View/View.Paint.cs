@@ -462,7 +462,7 @@ namespace Sgry.Azuki
 			g.FillRectangle( XofIconBar, lineTopY, IconBarWidth, LineSpacing );
             if (imgInd != -1 && IconBarImageList != null && IconBarImageList.Images.Count > 0 && IconBarImageList.Images.Count > imgInd)
             {
-                g.DrawImage(IconBarImageList.Images[imgInd], XofIconBar, lineTopY, IconBarWidth, IconBarWidth);
+                g.DrawImage(IconBarImageList.Images[imgInd], XofIconBar, lineTopY, IconBarWidth, LineSpacing);
             }
             
 		}

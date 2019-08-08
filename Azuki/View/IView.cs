@@ -761,6 +761,7 @@ namespace Sgry.Azuki
 		{
 			get;
 		}
-		#endregion
-	}
+        bool Silence { get; set; }
+        #endregion
+    }
 }

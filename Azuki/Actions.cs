@@ -30,7 +30,7 @@ namespace Sgry.Azuki
 			// do nothing if the document is read-only
 			if( doc.IsReadOnly )
 			{
-				Plat.Inst.MessageBeep();
+                if (!view.Silence) Plat.Inst.MessageBeep();
 				return;
 			}
 
@@ -57,7 +57,7 @@ namespace Sgry.Azuki
 				// if the caret is at document head, there is no chars to delete
 				if( caret <= 0 )
 				{
-					Plat.Inst.MessageBeep();
+                    if (!view.Silence) Plat.Inst.MessageBeep();
 					return;
 				}
 
@@ -123,7 +123,7 @@ namespace Sgry.Azuki
 			// do nothing if the document is read-only
 			if( doc.IsReadOnly )
 			{
-				Plat.Inst.MessageBeep();
+                if (!view.Silence) Plat.Inst.MessageBeep();
 				return;
 			}
 
@@ -148,7 +148,7 @@ namespace Sgry.Azuki
 				// if the caret is at document head, there is no chars to delete
 				if( doc.CaretIndex <= 0 )
 				{
-					Plat.Inst.MessageBeep();
+                    if (!view.Silence) Plat.Inst.MessageBeep();
 					return;
 				}
 
@@ -176,7 +176,7 @@ namespace Sgry.Azuki
 			// do nothing if the document is read-only
 			if( doc.IsReadOnly )
 			{
-				Plat.Inst.MessageBeep();
+                if (!view.Silence) Plat.Inst.MessageBeep();
 				return;
 			}
 
@@ -203,7 +203,7 @@ namespace Sgry.Azuki
 				// if the caret is at document end, there is no chars to delete
 				if( doc.Length <= begin )
 				{
-					Plat.Inst.MessageBeep();
+                    if (!view.Silence) Plat.Inst.MessageBeep();
 					return;
 				}
 
@@ -237,7 +237,7 @@ namespace Sgry.Azuki
 			// do nothing if the document is read-only
 			if( doc.IsReadOnly )
 			{
-				Plat.Inst.MessageBeep();
+                if (!view.Silence) Plat.Inst.MessageBeep();
 				return;
 			}
 
@@ -261,7 +261,7 @@ namespace Sgry.Azuki
 				int nextWordIndex = CaretMoveLogic.Calc_NextWord( view );
 				if( nextWordIndex == doc.Length && doc.CaretIndex == nextWordIndex )
 				{
-					Plat.Inst.MessageBeep();
+                    if (!view.Silence) Plat.Inst.MessageBeep();
 					return;
 				}
 
@@ -302,7 +302,7 @@ namespace Sgry.Azuki
 			// do nothing if the document is read-only
 			if( doc.IsReadOnly )
 			{
-				Plat.Inst.MessageBeep();
+                if (!ui.View.Silence) Plat.Inst.MessageBeep();
 				return;
 			}
 
@@ -424,7 +424,7 @@ namespace Sgry.Azuki
 			// do nothing if the document is read-only
 			if( doc.IsReadOnly )
 			{
-				Plat.Inst.MessageBeep();
+                if (!ui.View.Silence) Plat.Inst.MessageBeep();
 				return;
 			}
 

@@ -792,6 +792,15 @@ namespace Sgry.Azuki.WinForms
             set { View.IconBarImageList = value; }
         }
 
+        [Category("Appearance")]
+        [DefaultValue(false)]
+        [Description("無音にします。")]
+        public bool Silence
+        {
+            get { return View.Silence; }
+            set { View.Silence = value; }
+        }
+
         /// <summary>
         /// Gets or sets whether the current line would be drawn with underline or not.
         /// </summary>

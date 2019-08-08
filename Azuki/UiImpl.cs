@@ -360,7 +360,7 @@ namespace Sgry.Azuki
 			// if in read only mode, just notify and return 
 			if( doc.IsReadOnly )
 			{
-				Plat.Inst.MessageBeep();
+                if (!_UI.View.Silence) Plat.Inst.MessageBeep();
 				return;
 			}
 
@@ -741,7 +741,7 @@ namespace Sgry.Azuki
 			// do nothing if the document is read-only
 			if( Document.IsReadOnly )
 			{
-				Plat.Inst.MessageBeep();
+                if (!_UI.View.Silence) Plat.Inst.MessageBeep();
 				return;
 			}
 

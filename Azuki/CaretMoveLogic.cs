@@ -22,8 +22,8 @@ namespace Sgry.Azuki
 			int nextIndex = calculator( view );
 			if( nextIndex == doc.CaretIndex )
 			{
-				// notify that the caret not moved
-				Plat.Inst.MessageBeep();
+                // notify that the caret not moved
+                if (!view.Silence) Plat.Inst.MessageBeep();
 			}
 			else
 			{
@@ -48,8 +48,8 @@ namespace Sgry.Azuki
 			nextIndex = calculator( view );
 			if( nextIndex == doc.CaretIndex )
 			{
-				// notify that the caret not moved
-				Plat.Inst.MessageBeep();
+                // notify that the caret not moved
+                if (!view.Silence) Plat.Inst.MessageBeep();
 			}
 
 			// set new selection

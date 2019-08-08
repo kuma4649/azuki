@@ -586,6 +586,7 @@ namespace Sgry.Azuki.WinForms
             y -= _Offset.Y;
             using (Graphics g = Graphics.FromHdc(DC))
             {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Bicubic;
                 g.DrawImage(img, x, y, width, height);
             }
         }
