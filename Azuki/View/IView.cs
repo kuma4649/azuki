@@ -147,11 +147,17 @@ namespace Sgry.Azuki
             get; set;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         bool ShowsIconBar
         {
             get; set;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         System.Windows.Forms.ImageList IconBarImageList
         {
             get;set;
@@ -675,6 +681,9 @@ namespace Sgry.Azuki
             get;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         int IconBarWidth
         {
             get;
@@ -761,6 +770,10 @@ namespace Sgry.Azuki
 		{
 			get;
 		}
+
+        /// <summary>
+        /// 
+        /// </summary>
         bool Silence { get; set; }
         #endregion
     }

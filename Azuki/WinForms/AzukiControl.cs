@@ -774,6 +774,9 @@ namespace Sgry.Azuki.WinForms
 			set{ View.ShowsDirtBar = value; }
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
         [Category("Appearance")]
         [DefaultValue(false)]
         [Description("行頭にアイコンを表示するスペースを設けます。")]
@@ -783,6 +786,9 @@ namespace Sgry.Azuki.WinForms
             set { View.ShowsIconBar = value; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [Category("Appearance")]
         [DefaultValue(null)]
         [Description("IconBarに使用する画像を指定します。")]
@@ -792,6 +798,9 @@ namespace Sgry.Azuki.WinForms
             set { View.IconBarImageList = value; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [Category("Appearance")]
         [DefaultValue(false)]
         [Description("無音にします。")]
@@ -1893,7 +1902,15 @@ namespace Sgry.Azuki.WinForms
 				HScroll( this, EventArgs.Empty );
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
         public event IconBarClickedEventHandler IconBarClicked;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="clickedIndex"></param>
         public void InvokeIconBarClicked(int clickedIndex)
         {
             if (IconBarClicked != null)

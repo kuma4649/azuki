@@ -130,7 +130,7 @@ namespace Sgry.Azuki
 				// draw foreground
 				if( DrawsTab )
 				{
-					g.ForeColor = ColorScheme.WhiteSpaceColor;
+					g.ForeColor = ColorScheme.EolColor;// ColorScheme.WhiteSpaceColor;
 					g.DrawLine( fgLeft, fgBottom, fgRight, fgBottom );
 					g.DrawLine( fgRight, fgBottom, fgRight, fgTop );
 				}

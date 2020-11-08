@@ -42,6 +42,7 @@ namespace Sgry.Azuki
         /// <param name="oldAnchorIndex">index of the selection anchor at when the replacement has occured</param>
         /// <param name="oldCaretIndex">index of the caret at when the replacement has occured</param>
         /// <param name="ldsUndoInfo">line dirty states before the replacement</param>
+        /// <param name="liiUndoInfo"></param>
         public EditAction(Document doc, int index, string deletedText, string insertedText, int oldAnchorIndex, int oldCaretIndex, LineDirtyStateUndoInfo ldsUndoInfo, LineIconIndexUndoInfo liiUndoInfo)
         {
             _Document = doc;

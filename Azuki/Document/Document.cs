@@ -195,6 +195,11 @@ namespace Sgry.Azuki
 			_LDS[lineIndex] = lds;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lineIndex"></param>
+        /// <returns></returns>
         public int GetLineIconIndex(int lineIndex)
         {
             Debug.Assert(lineIndex <= _LII.Count);
@@ -210,6 +215,11 @@ namespace Sgry.Azuki
             return _LII[lineIndex];
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lineIndex"></param>
+        /// <param name="lii"></param>
         public void SetLineIconIndex(int lineIndex, int lii)
         {
             Debug.Assert(lineIndex <= _LII.Count);

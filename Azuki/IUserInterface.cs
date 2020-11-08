@@ -179,6 +179,9 @@ namespace Sgry.Azuki
 			get; set;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
         bool ShowsIconBar
         {
             get; set;
@@ -881,8 +884,15 @@ namespace Sgry.Azuki
 		/// </summary>
 		void InvokeHScroll();
 
-
+        /// <summary>
+        /// 
+        /// </summary>
         event IconBarClickedEventHandler IconBarClicked;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="clickedIndex"></param>
         void InvokeIconBarClicked(int clickedIndex);
 
 		#endregion
@@ -977,6 +987,11 @@ namespace Sgry.Azuki
 	/// <seealso cref="Sgry.Azuki.IUserInterface.LineDrawn">IUserInterface.LineDrawn event</seealso>
 	public delegate void LineDrawEventHandler( object sender, LineDrawEventArgs e );
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     public delegate void IconBarClickedEventHandler(object sender, IconBarClickedEventArgs e);
 
     /// <summary>
@@ -1044,13 +1059,23 @@ namespace Sgry.Azuki
 		#endregion
 	}
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class IconBarClickedEventArgs : EventArgs
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="clickedIndex"></param>
         public IconBarClickedEventArgs(int clickedIndex)
         {
             this.clickedIndex = clickedIndex;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public int clickedIndex { get; }
     }
 

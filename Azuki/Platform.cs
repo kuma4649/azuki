@@ -175,6 +175,14 @@ namespace Sgry.Azuki
 		/// </summary>
 		void FillRectangle( int x, int y, int width, int height );
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
         void DrawImage(Image bmp, int x, int y, int width, int height);
 
         #endregion
