@@ -380,11 +380,11 @@ namespace Sgry.Azuki
 				// begin grouping UNDO action
 				doc.BeginUndo();
 
-				// clear rectangle selection
-				if( doc.RectSelectRanges != null )
-				{
-					doc.DeleteRectSelectText();
-				}
+				//// clear rectangle selection
+				//if( doc.RectSelectRanges != null )
+				//{
+				//	doc.DeleteRectSelectText();
+				//}
 
 				// handle input characters
 				foreach( char ch in text )
@@ -436,21 +436,36 @@ namespace Sgry.Azuki
 					}
 				}
 
-				// calculate new caret position
-				doc.GetSelection( out selBegin, out selEnd );
-				newCaretIndex = selBegin + input.Length;
-
-				// calc replacement target range
-				if( IsOverwriteMode
-					&& selBegin == selEnd && selEnd+1 < doc.Length
-					&& TextUtil.IsEolChar(doc[selBegin]) != true )
+				if (doc.RectSelectRanges == null)
 				{
-					selEnd++;
-				}
+					// calculate new caret position
+					doc.GetSelection(out selBegin, out selEnd);
+					newCaretIndex = selBegin + input.Length;
 
-				// replace selection to input char
-				doc.Replace( input.ToString(), selBegin, selEnd );
-				doc.SetSelection( newCaretIndex, newCaretIndex );
+					// calc replacement target range
+					if (IsOverwriteMode
+						&& selBegin == selEnd && selEnd + 1 < doc.Length
+						&& TextUtil.IsEolChar(doc[selBegin]) != true)
+					{
+						selEnd++;
+					}
+
+					// replace selection to input char
+					doc.Replace(input.ToString(), selBegin, selEnd);
+					doc.SetSelection(newCaretIndex, newCaretIndex);
+				}
+                else
+                {
+					for (int i = doc.RectSelectRanges.Length - 2; i >= 0; i -= 2)
+					{
+						doc.Replace(input.ToString(), doc.RectSelectRanges[i], doc.RectSelectRanges[i]);
+						for (int j = i; j < doc.RectSelectRanges.Length; j += 2)
+						{
+							doc.RectSelectRanges[j] += input.Length;
+							doc.RectSelectRanges[j + 1] += input.Length;
+						}
+					}
+				}
 
 				// set desired column
 				if( UsesStickyCaret == false )
