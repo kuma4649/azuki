@@ -1,0 +1,12 @@
+﻿追加機能
+ 概要
+  ビュー左端に、16x16のアイコンを表示するエリア(IconBar)を追加
+  アイコンはイメージリストに設定したものを表示する。
+ プロパティ
+  AzukiControl.ShowsIconBar
+  AzukiControl.IconBarImageList
+ メソッド
+  GetLineIconIndex
+  SetLineIconIndex
+ イベント
+  AzukiControl.IconBarClicked
