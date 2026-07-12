@@ -464,10 +464,15 @@ namespace Sgry.Azuki
 		/// </summary>
 		void ScrollToCaret();
 
+        /// <summary>
+        /// Scroll to where the caret is.
+        /// </summary>
+        void ScrollToCaretVCenter();
+        
 		/// <summary>
-		/// Scroll vertically.
-		/// </summary>
-		void Scroll( int lineDelta );
+        /// Scroll vertically.
+        /// </summary>
+        void Scroll( int lineDelta );
 
 		/// <summary>
 		/// Scroll horizontally.

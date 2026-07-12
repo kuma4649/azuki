@@ -1947,10 +1947,15 @@ namespace Sgry.Azuki.WinForms
 			View.ScrollToCaret();
 		}
 
+        public void ScrollToCaretVCenter()
+        {
+            View.ScrollToCaretVCenter();
+        }
+        
 		/// <summary>
-		/// Updates scrollbar's range.
-		/// </summary>
-		public void UpdateScrollBarRange()
+        /// Updates scrollbar's range.
+        /// </summary>
+        public void UpdateScrollBarRange()
 		{
 			int vMax, hMax;
 			int vPageSize, hPageSize;

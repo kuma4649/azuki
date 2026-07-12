@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Sgry.Azuki;
+using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using Sgry.Azuki;
 using InstalledFontCollection = System.Drawing.Text.InstalledFontCollection;
 
 namespace Sgry.Ann
@@ -31,24 +32,26 @@ namespace Sgry.Ann
 			// other initialization
 			_FontInfo = new FontInfo( this.Font );
 		}
-		#endregion
+        #endregion
 
-		#region Setting Access
-		/// <summary>
-		/// This event handler will be called on
-		/// on each time user changed a parameter on dialog.
-		/// Use this for preview option values.
-		/// </summary>
-		public EventHandler OptionChangedHandler
+        #region Setting Access
+        /// <summary>
+        /// This event handler will be called on
+        /// on each time user changed a parameter on dialog.
+        /// Use this for preview option values.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public EventHandler OptionChangedHandler
 		{
 			get{ return _Handler; }
 			set{ _Handler = value; }
 		}
 
-		/// <summary>
-		/// Gets or sets font information to be used in Azuki.
-		/// </summary>
-		public FontInfo FontInfo
+        /// <summary>
+        /// Gets or sets font information to be used in Azuki.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public FontInfo FontInfo
 		{
 			get{ return _FontInfo; }
 			set
@@ -59,10 +62,11 @@ namespace Sgry.Ann
 			}
 		}
 
-		/// <summary>
-		/// Gets or sets Azuki's drawing option used in this dialog.
-		/// </summary>
-		public DrawingOption DrawingOption
+        /// <summary>
+        /// Gets or sets Azuki's drawing option used in this dialog.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public DrawingOption DrawingOption
 		{
 			get{ return _DrawingOption; }
 			set
@@ -79,10 +83,11 @@ namespace Sgry.Ann
 			}
 		}
 
-		/// <summary>
-		/// Gets or sets tab width used in this dialog.
-		/// </summary>
-		public int TabWidth
+        /// <summary>
+        /// Gets or sets tab width used in this dialog.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int TabWidth
 		{
 			get{ return _TabWidth; }
 			set

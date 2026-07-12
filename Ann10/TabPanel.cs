@@ -5,8 +5,9 @@
 //=========================================================
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Sgry.Azuki
@@ -46,40 +47,44 @@ namespace Sgry.Azuki
 			_TabTextFont = new Font( FontFamily.GenericSansSerif, 10, FontStyle.Regular );
 			SetFont( _TabTextFont );
 		}
-		#endregion
+        #endregion
 
-		#region Appearence
-		/// <summary>
-		/// Gets or sets color of text on tabs.
-		/// </summary>
-		public Color TabTextColor
+        #region Appearence
+        /// <summary>
+        /// Gets or sets color of text on tabs.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color TabTextColor
 		{
 			get{ return _TabTextColor; }
 			set{ _TabTextColor = value; }
 		}
 
-		/// <summary>
-		/// Gets or sets background color of tab area and inactive tabs.
-		/// </summary>
-		public Color TabBackColor
+        /// <summary>
+        /// Gets or sets background color of tab area and inactive tabs.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color TabBackColor
 		{
 			get{ return _TabBackColor; }
 			set{ _TabBackColor = value; }
 		}
 
-		/// <summary>
-		/// Gets or sets background color of active tab.
-		/// </summary>
-		public Color ActiveTabBackColor
+        /// <summary>
+        /// Gets or sets background color of active tab.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color ActiveTabBackColor
 		{
 			get{ return _ActiveTabBackColor; }
 			set{ _ActiveTabBackColor = value; }
 		}
 
-		/// <summary>
-		/// Gets or sets color of tab graphic borders.
-		/// </summary>
-		public Color TabLineColor
+        /// <summary>
+        /// Gets or sets color of tab graphic borders.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color TabLineColor
 		{
 			get{ return _TabLineColor; }
 			set{ _TabLineColor = value; }
@@ -127,22 +132,24 @@ namespace Sgry.Azuki
 			_QuarterHeight = Height >> 2;
 			_OneEighthHeight = Height >> 3;
 		}
-		#endregion
+        #endregion
 
-		#region Operations
-		/// <summary>
-		/// Gets or sets the items to be shown in this tab control.
-		/// </summary>
-		public IList<T> Items
+        #region Operations
+        /// <summary>
+        /// Gets or sets the items to be shown in this tab control.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public IList<T> Items
 		{
 			get{ return _Items; }
 			set{ _Items = value; }
 		}
 
-		/// <summary>
-		/// Gets the item associated with selected tab.
-		/// </summary>
-		public T SelectedItem
+        /// <summary>
+        /// Gets the item associated with selected tab.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public T SelectedItem
 		{
 			get{ return _SelectedItem; }
 			set

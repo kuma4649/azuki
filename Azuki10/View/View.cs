@@ -1111,10 +1111,86 @@ namespace Sgry.Azuki
 			}
 		}
 
+        public void ScrollToCaretVCenter()
+        {
+            using (IGraphics g = _UI.GetIGraphics())
+            {
+                ScrollToCaretVCenter(g, UserPref.AutoScrollMargin);
+            }
+        }
+
+        /// <summary>
+        /// Scroll to where the caret is.
+        /// </summary>
+        public void ScrollToCaretVCenter(IGraphics g)
+        {
+            ScrollToCaretVCenter(g, UserPref.AutoScrollMargin);
+        }
+
 		/// <summary>
-		/// Scroll vertically.
+		/// Scroll to where the caret is.
 		/// </summary>
-		public void Scroll( int lineDelta )
+		public void ScrollToCaretVCenter(IGraphics g, int autoScrollMargin)
+		{
+			Rectangle threshRect = new Rectangle();
+			Point caretPos;
+			int vDelta = 0, hDelta;
+
+			// make rentangle of virtual text view
+			threshRect.X = ScrollPosX + SpaceWidthInPx;
+			threshRect.Y = FirstVisibleLine * LineSpacing;
+			threshRect.Width = (_VisibleSize.Width - XofTextArea) - (SpaceWidthInPx * 2);
+			threshRect.Height = (_VisibleSize.Height - YofTextArea) - LineSpacing;
+
+			// shrink the rectangle if some lines must be visible
+			if (0 < autoScrollMargin)
+			{
+				int yMargin = Math.Max(0, autoScrollMargin * LineSpacing);
+				threshRect.Y += yMargin;
+				threshRect.Height -= (yMargin * 2);
+			}
+
+			// calculate caret position
+			caretPos = GetVirPosFromIndex(g, Document.CaretIndex);
+
+			// calculate horizontal offset to the position where we desire to scroll to
+			hDelta = 0;
+			if (threshRect.Right <= caretPos.X)
+			{
+				// scroll to right
+				hDelta = caretPos.X - (threshRect.Right - TabWidthInPx);
+			}
+			else if (caretPos.X < threshRect.Left)
+			{
+				// scroll to left
+				hDelta = caretPos.X - (threshRect.Left + TabWidthInPx);
+			}
+
+			// calculate vertical offset to the position where we desire to scroll to
+			vDelta = 0;
+			if (caretPos.Y != threshRect.Top + threshRect.Height / 2)
+			{
+				vDelta = caretPos.Y - (threshRect.Top + threshRect.Height / 2);
+			}
+
+			// scroll the view
+			Scroll(vDelta / LineSpacing);
+			HScroll(hDelta);
+
+			// update horizontal ruler graphic.
+			// because indicator graphic may have been scrolled out partially (drawn partially),
+			// just scrolling horizontal ruler area may make uncompeltely drawn indicator
+			if (ShowsHRuler && 0 < hDelta)
+			{
+				UpdateHRuler(g);
+			}
+		}
+
+
+        /// <summary>
+        /// Scroll vertically.
+        /// </summary>
+        public void Scroll( int lineDelta )
 		{
 			int delta;
 			Rectangle clipRect;
@@ -1680,7 +1756,7 @@ namespace Sgry.Azuki
 			return (  (lineIndex - FirstVisibleLine) * LineSpacing  ) + YofTextArea;
 		}
 
-		int EolCodeWidthInPx
+        int EolCodeWidthInPx
 		{
 			get{ return (_LineHeight >> 1) + (_LineHeight >> 2); }
 		}

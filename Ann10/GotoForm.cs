@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 using Debug = System.Diagnostics.Debug;
 
@@ -12,13 +13,15 @@ namespace Sgry.Ann
 			Font = SystemInformation.MenuFont;
 		}
 
-		public int LineNumber
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int LineNumber
 		{
 			get{ return Int32.Parse(_LineNumTextBox.Text); }
 			set{ _LineNumTextBox.Text = value.ToString(); }
 		}
 
-		public bool UseScreenLineNumber
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool UseScreenLineNumber
 		{
 			get{ return _UseScreenLineNumberCheckBox.Checked; }
 			set{ _UseScreenLineNumberCheckBox.Checked = value; }

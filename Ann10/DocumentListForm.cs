@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
@@ -41,13 +42,14 @@ namespace Sgry.Ann
 				}
 			}
 		}
-		#endregion
+        #endregion
 
-		#region Properties
-		/// <summary>
-		/// Sets documents to be shown in this dialog.
-		/// </summary>
-		public List<Document> Documents
+        #region Properties
+        /// <summary>
+        /// Sets documents to be shown in this dialog.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public List<Document> Documents
 		{
 			set
 			{
@@ -80,10 +82,11 @@ namespace Sgry.Ann
 			}
 		}
 
-		/// <summary>
-		/// Gets the document selected by user;
-		/// </summary>
-		public Document SelectedDocument
+        /// <summary>
+        /// Gets the document selected by user;
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Document SelectedDocument
 		{
 			get
 			{
